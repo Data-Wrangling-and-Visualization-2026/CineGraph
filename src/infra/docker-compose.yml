@@ -1,0 +1,5 @@
+services:
+  cinegraph:
+    build: ../backend
+    volumes:
+      - ../backend/data:/app/data
