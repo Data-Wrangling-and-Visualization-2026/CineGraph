@@ -5,6 +5,9 @@ from settings import settings
 
 
 def create_data_folder() -> None:
+    """
+    Check if /data folder is present. If no then creates it.
+    """
     os.makedirs(
         settings.scraper.output_folder,
         exist_ok=True
@@ -12,10 +15,16 @@ def create_data_folder() -> None:
 
 
 def collect_proxy_ips() -> list[str]:
+    """
+    Collects list of proxies from env.
+
+    Returns:
+        list[str]: List of proxies in format 'ip:port'
+    """
     current_ip_n = 1
     ips = []
 
-    port = os.getenv('PROXY_PORT')
+    port = os.getenv('PROXY_PORT') # one port for all IPs
     if not port:
         return ips
 
@@ -32,6 +41,15 @@ def collect_proxy_ips() -> list[str]:
 
 
 def get_next_proxy() -> Generator[str, None, None]:
+    """
+    Creates generator for proxies. Uses Round-Robin alg.
+
+    Returns:
+        None: if no proxies are present
+
+    Yields:
+        Generator[str, None, None]: generator
+    """
     ips = collect_proxy_ips()
 
     if not len(ips):
