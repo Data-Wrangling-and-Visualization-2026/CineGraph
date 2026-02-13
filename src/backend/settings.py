@@ -1,7 +1,10 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from pydantic import BaseModel
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -13,11 +16,12 @@ class ScraperSettings(BaseModel):
         BASE_DIR, 'data' # -> /src/data/
     )
 
+    # Do not use stateful mode inside Docker
     headless: bool = True
 
-    delay: int = 6
+    delay: int = 3
 
-    num_workers: int = 2
+    num_workers: int = 4
 
 
 class Settings(BaseModel):

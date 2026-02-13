@@ -2,7 +2,7 @@ import os
 import re
 from multiprocessing import Pool
 
-from scraper.utils import create_data_folder
+from scraper.utils import create_data_folder, get_next_proxy
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -11,6 +11,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from settings import settings
+
+# from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Scraper:
@@ -24,7 +26,7 @@ class Scraper:
         self.num_workers = settings.scraper.num_workers
 
 
-    def _setup_driver(self) -> WebDriver:
+    def _setup_driver(self, proxy: str | None = None) -> WebDriver:
         chrome_opts = Options()
 
         if settings.scraper.headless:
@@ -37,7 +39,12 @@ class Scraper:
             '(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         )
 
+        if proxy:
+            print(proxy)
+            chrome_opts.add_argument(f'--proxy-server=http://{proxy}')
+
         service = Service(executable_path='/usr/bin/chromedriver')
+        # service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_opts)
 
         return driver
@@ -122,8 +129,8 @@ class Scraper:
         return full_script
 
 
-    def _start_worker(self, page_range: list[int], worker_id: int = 0) -> None:
-        driver = self._setup_driver()
+    def _start_worker(self, page_range: list[int], proxy: str | None, worker_id: int = 0) -> None:
+        driver = self._setup_driver(proxy)
 
         try:
             all_movies = []
@@ -141,14 +148,28 @@ class Scraper:
 
 
     def start_scraping(self) -> None:
-        self._setup_driver().quit()
-
         start_page = 1
         end_page = 2029
 
         all_pages = list(range(start_page, end_page + 1))
         chunk_size = (len(all_pages) + self.num_workers - 1) // self.num_workers
-        page_mapping = [all_pages[i : i + chunk_size] for i in range(0, len(all_pages), chunk_size)]
+        page_mapping = [
+            all_pages[i : i + chunk_size]
+            for i in range(0, len(all_pages), chunk_size)
+        ]
+
+        proxies = get_next_proxy()
+        if not proxies:
+            proxies = [None for _ in range(self.num_workers)]
+        else:
+            proxies = [
+                next(proxies) for _ in range(self.num_workers)
+            ]
+
+        worker_args = [
+            (page_map, proxy, i + 1)
+            for i, (page_map, proxy) in enumerate(zip(page_mapping, proxies))
+        ]
 
         with Pool(processes=self.num_workers) as p:
-            p.map(self._start_worker, page_mapping)
+            p.starmap(self._start_worker, worker_args)
