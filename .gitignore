@@ -208,3 +208,9 @@ __marimo__/
 
 # Folder with subtitles (as .txt files)
 data/
+
+# Folder with generated embeddings
+embeddings/
+
+# Model's weights
+weights/

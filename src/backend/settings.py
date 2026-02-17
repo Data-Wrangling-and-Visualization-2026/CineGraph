@@ -37,8 +37,14 @@ class ScraperSettings(BaseModel):
     )
 
 
+class EmotionAnalyzerSettings(BaseModel):
+    input_path: str = './data'
+    output_path: str = './emotion_analysis_models/embeddings'
+
+
 class Settings(BaseModel):
     scraper: ScraperSettings = ScraperSettings()
+    emotion_analyzer: EmotionAnalyzerSettings = EmotionAnalyzerSettings()
     base_dir: str = BASE_DIR
 
 

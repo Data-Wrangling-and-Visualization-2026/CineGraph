@@ -1,4 +1,6 @@
-from scraper.scraper import Scraper
+# from scraping.scraper import Scraper
+from emotion_analysis_models.model import EmotionAnalyzer
 
 if __name__ == '__main__':
-    Scraper().start_scraping()
+    EmotionAnalyzer().analyze_data()
+    # Scraper.start_scraping()
