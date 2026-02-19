@@ -52,7 +52,7 @@ class PreprocessorSettings(BaseModel):
     local_model_path: str = './emotion_analysis/weights/mistral_prep/model.gguf'
     model: str = 'Qwen/Qwen2.5-7B-Instruct'
     input_path: str = './data'
-    output_path: str = './preprocessing/ready_data'
+    output_path: str = Path('./preprocessing/ready_data')
     chunk_size: int = 4096
     offset: int = 0
 
