@@ -214,3 +214,6 @@ embeddings/
 
 # Model's weights
 weights/
+
+# Preprocessed Data
+ready_data/

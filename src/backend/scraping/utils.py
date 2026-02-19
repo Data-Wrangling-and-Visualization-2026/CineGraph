@@ -54,7 +54,8 @@ def get_next_proxy() -> Generator[str, None, None]:
 
     if not len(ips):
         print('No available IPs!')
-        return None
+        while True:
+            yield None
 
     i = 0
     while True:

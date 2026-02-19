@@ -1,8 +1,9 @@
 import os
 import re
 from multiprocessing import Pool
+from pathlib import Path
 
-from scraper.utils import create_data_folder, get_next_proxy
+from scraping.utils import create_data_folder, get_next_proxy
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -10,9 +11,8 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from settings import settings
-
-# from webdriver_manager.chrome import ChromeDriverManager
+from settings import BASE_DIR, settings
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 class Scraper:
@@ -61,8 +61,11 @@ class Scraper:
 
         # Uncomment second if run manually. Keep, if run inside Docker
         # This installs or collects already existing Chrome driver for selenium
-        service = Service(executable_path='/usr/bin/chromedriver')
-        # service = Service(ChromeDriverManager().install())
+        root = BASE_DIR.cwd()
+        if root == Path('app'):
+            service = Service(executable_path='/usr/bin/chromedriver')
+        else:
+            service = Service(ChromeDriverManager().install())
 
         driver = webdriver.Chrome(service=service, options=chrome_opts)
 
@@ -212,6 +215,9 @@ class Scraper:
 
                 all_movies.extend(movies_on_page)
 
+        except Exception as e:
+            print(e)
+
         finally:
             driver.quit() # Most important part. Do not change!
             print(f'Worker №{worker_id} finished scraping!')
@@ -223,23 +229,21 @@ class Scraper:
         """
         start_page = 1
         end_page = 2029
+        offset = settings.scraper.offset
 
         # Map pages to workers
         all_pages = list(range(start_page, end_page + 1))
         chunk_size = (len(all_pages) + self.num_workers - 1) // self.num_workers
         page_mapping = [
-            all_pages[i : i + chunk_size]
+            all_pages[i + offset : i + offset + chunk_size]
             for i in range(0, len(all_pages), chunk_size)
         ]
 
         # Map optional proxy servers. If no present -> populate with Nones
         proxies = get_next_proxy()
-        if not proxies:
-            proxies = [None for _ in range(self.num_workers)]
-        else:
-            proxies = [
-                next(proxies) for _ in range(self.num_workers)
-            ]
+        proxies = [
+            next(proxies) for _ in range(self.num_workers)
+        ]
 
         # Collect worker's args
         worker_args = [

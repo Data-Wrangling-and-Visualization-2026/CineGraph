@@ -3,5 +3,6 @@ services:
     build: ../backend
     volumes:
       - ../backend/data:/app/data
+      - ../backend/emotion_analysis/embeddings:/app/emotion_analysis
     env_file:
       - .env

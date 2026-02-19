@@ -22,7 +22,7 @@ class ScraperSettings(BaseModel):
 
     # Do not set False if using Docker
     headless: bool = Field(
-        default=True,
+        default=False,
         description="Run browser in headless mode (disable UI)"
     )
 
@@ -32,19 +32,35 @@ class ScraperSettings(BaseModel):
     )
 
     num_workers: int = Field(
-        default=4,
+        default=2,
         description="Number of concurrent workers"
+    )
+
+    offset: int = Field(
+        default=77,
+        description="End page for the first worker at the last run"
     )
 
 
 class EmotionAnalyzerSettings(BaseModel):
     input_path: str = './data'
-    output_path: str = './emotion_analysis_models/embeddings'
+    output_path: str = './emotion_analysis/embeddings'
+
+
+class PreprocessorSettings(BaseModel):
+    use_hugging_face: bool = False
+    local_model_path: str = './emotion_analysis/weights/mistral_prep/model.gguf'
+    model: str = 'Qwen/Qwen2.5-7B-Instruct'
+    input_path: str = './data'
+    output_path: str = './preprocessing/ready_data'
+    chunk_size: int = 4096
+    offset: int = 0
 
 
 class Settings(BaseModel):
     scraper: ScraperSettings = ScraperSettings()
     emotion_analyzer: EmotionAnalyzerSettings = EmotionAnalyzerSettings()
+    preprocessor: PreprocessorSettings = PreprocessorSettings()
     base_dir: str = BASE_DIR
 
 
