@@ -32,12 +32,12 @@ class ScraperSettings(BaseModel):
     )
 
     num_workers: int = Field(
-        default=2,
+        default=4,
         description="Number of concurrent workers"
     )
 
     offset: int = Field(
-        default=77,
+        default=386,
         description="End page for the first worker at the last run"
     )
 
