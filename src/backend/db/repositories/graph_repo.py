@@ -1,82 +1,98 @@
 from db.models.embedding import Embedding
 from db.models.graph import Graph
 from db.models.movie import Movie
-from sqlalchemy.orm import Session
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy_utils import Ltree
 
 
 class GraphRepository:
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-
-    def create_root(self) -> Graph:
-        root = self.session.query(Graph).filter(Graph.path == Ltree('root')).first()
+    async def create_root(self) -> Graph:
+        result = await self.session.execute(
+            select(Graph).where(Graph.path == Ltree("root"))
+        )
+        root = result.scalar_one_or_none()
 
         if root is not None:
-            print('Root already exists')
+            print("Root already exists")
             return root
 
         root = Graph(
-            name='root',
-            path=Ltree('root'),
-            type='node'
+            name="root",
+            path=Ltree("root"),
+            type="node",
         )
 
         self.session.add(root)
-        self.session.commit()
+        await self.session.commit()
+        await self.session.refresh(root)
 
         return root
 
-
-    def add_child(self, parent_id: int, name: str) -> Graph:
-        parent = self.session.query(Graph).get(parent_id)
+    async def add_child(self, parent_id: int, name: str) -> Graph:
+        parent = await self.session.get(Graph, parent_id)
 
         if parent is None:
-            raise RuntimeError(f'No parent with id {parent_id}')
+            raise RuntimeError(f"No parent with id {parent_id}")
 
         child = Graph(
             name=name,
-            type='node',
-            path=Ltree('tmp')
+            type="node",
+            path=Ltree("tmp"),
         )
 
         self.session.add(child)
-        self.session.flush()
+        await self.session.flush()  # gets child.id
 
-        valid_path = f'{parent.path}.{child.id}'
+        valid_path = f"{parent.path}.{child.id}"
         child.path = Ltree(valid_path)
 
         parent.children_count += 1
 
-        self.session.commit()
+        await self.session.commit()
+        await self.session.refresh(child)
 
         return child
 
+    async def get_immediate_children(
+        self, node_id: int
+    ) -> dict[str, Graph | list[Graph] | list[Movie]]:
+        node = await self.session.get(Graph, node_id)
 
-    def get_immediate_children(self, node_id: int) -> dict[str, Graph | str]:
-        node = self.session.query(Graph).get(node_id)
         if node is None:
-            raise RuntimeError(f'No node with id {node_id}')
+            raise RuntimeError(f"No node with id {node_id}")
 
-        query_path = str(node.path) + '.*{1}'
+        query_path = str(node.path) + ".*{1}"
 
-        children = self.session.query(Graph).filter(
-            Graph.path.lquery(Ltree(query_path))
-        ).all()
+        result = await self.session.execute(
+            select(Graph).where(
+                Graph.path.lquery(Ltree(query_path))
+            )
+        )
+        children = result.scalars().all()
 
-        movies = self.session.query(Movie).filter(
-            Movie.graph_id == node_id
-        ).all()
+        result = await self.session.execute(
+            select(Movie).where(Movie.graph_id == node_id)
+        )
+        movies = result.scalars().all()
 
         return {
-            'node': node,
-            'children_nodes': children,
-            'movies': movies
+            "node": node,
+            "children_nodes": children,
+            "movies": movies,
         }
 
-
-    def add_movie(self, graph_id: int, title: str, year: int, vectors: list[list[float]]) -> Movie:
+    async def add_movie(
+        self,
+        graph_id: int,
+        title: str,
+        year: int,
+        vectors: list[list[float]],
+    ) -> Movie:
         movie = Movie(
             graph_id=graph_id,
             title=title,
@@ -84,19 +100,20 @@ class GraphRepository:
         )
 
         self.session.add(movie)
-        self.session.flush()
+        await self.session.flush()  # get movie.id
 
-        embs = []
-        for i, vec in enumerate(vectors):
-            embs.append(
-                Embedding(
-                    movie_id=movie.id,
-                    window_id=i,
-                    embedding=vec
-                )
+        embs = [
+            Embedding(
+                movie_id=movie.id,
+                window_id=i,
+                embedding=vec,
             )
+            for i, vec in enumerate(vectors)
+        ]
 
         self.session.add_all(embs)
-        self.session.commit()
+
+        await self.session.commit()
+        await self.session.refresh(movie)
 
         return movie
