@@ -217,3 +217,9 @@ weights/
 
 # Preprocessed Data
 ready_data/
+
+# That is not supposed to be published. Tsss...
+passthrough.py
+
+# Postgres
+postgres_data/

@@ -57,10 +57,22 @@ class PreprocessorSettings(BaseModel):
     offset: int = 0
 
 
+class DBSettings(BaseModel):
+    db_url: str = os.environ['DB_URL']
+
+
+class GraphSettings(BaseModel):
+    max_depth: int = 5
+    min_samples_leaf: int = 6
+    num_clusters: int = 5
+
+
 class Settings(BaseModel):
     scraper: ScraperSettings = ScraperSettings()
     emotion_analyzer: EmotionAnalyzerSettings = EmotionAnalyzerSettings()
     preprocessor: PreprocessorSettings = PreprocessorSettings()
+    db: DBSettings = DBSettings()
+    graph: GraphSettings = GraphSettings()
     base_dir: str = BASE_DIR
 
 

@@ -6,9 +6,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
+from peft import PeftModel
 from settings import settings
 from torch.amp import autocast
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+)
 
 
 class EmotionAnalyzer:
@@ -19,9 +24,32 @@ class EmotionAnalyzer:
         stride: int = 256,
         batch_size: int = 16,
         use_amp: bool = True,
+        adapter_path: str | None = None,
+        num_emotions: int | None = None,
+        problem_type: str = 'multi_label_classification'
     ):
         self.checkpoint = checkpoint
-        self.model = AutoModelForSequenceClassification.from_pretrained(checkpoint)
+
+        if adapter_path is not None:
+            bnb_config = BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_compute_dtype=torch.bfloat16,
+                bnb_4bit_use_double_quant=True
+            )
+
+            base_model = AutoModelForSequenceClassification.from_pretrained(
+                checkpoint,
+                quantization_config=bnb_config,
+                num_labels=num_emotions,
+                problem_type=problem_type
+            )
+            self.model = PeftModel.from_pretrained(base_model, adapter_path)
+            self.use_sigmoid = True
+        else:
+            self.model = AutoModelForSequenceClassification.from_pretrained(checkpoint)
+            self.use_sigmoid = False
+
         self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
         self.window_size = window_size
@@ -63,7 +91,10 @@ class EmotionAnalyzer:
             else:
                 outputs = self.model(batch, attention_mask=attention_mask)
 
-            probs = torch.softmax(outputs.logits, dim=-1)
+            if self.use_sigmoid:
+                probs = torch.sigmoid(outputs.logits)
+            else:
+                probs = torch.softmax(outputs.logits, dim=-1)
 
         return probs.cpu().numpy()
 
