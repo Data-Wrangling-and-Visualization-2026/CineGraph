@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from db.repositories.graph_repo import GraphRepository
-from db.session import SessionLocal
+from db.session import get_db
 from settings import settings
 from sklearn.cluster import KMeans
 
@@ -19,10 +19,6 @@ def random_name() -> str:
 
 
 class GraphCreator:
-    def __init__(self):
-        self.db = SessionLocal()
-        self.repo = GraphRepository(self.db)
-
 
     def _construct_dataset(self) -> pd.DataFrame:
         movies = glob.glob(settings.emotion_analyzer.output_path + '/*.csv')
@@ -64,18 +60,18 @@ class GraphCreator:
         }
 
 
-    def _add_movies_to_node(self, node, movies) -> None:
+    async def _add_movies_to_node(self, node, movies) -> None:
         titles = movies['movie']
         for title in titles:
             movie_data = self._collect_movie_data(title)
-            self.repo.add_movie(node.id, **movie_data)
+            await self.repo.add_movie(node.id, **movie_data)
 
 
-    def _construct_cluster(self, node, movies_subset: pd.DataFrame, depth):
+    async def _construct_cluster(self, node, movies_subset: pd.DataFrame, depth):
         print('\t' * depth, len(movies_subset), sep='| ')
 
         if depth == settings.graph.max_depth:
-            self._add_movies_to_node(node, movies_subset)
+            await self._add_movies_to_node(node, movies_subset)
             return
 
         clusters = KMeans(
@@ -87,13 +83,16 @@ class GraphCreator:
         for idx in range(settings.graph.num_clusters):
             selected = movies_subset[clusters == idx]
             if len(selected) <= settings.graph.min_samples_leaf:
-                self._add_movies_to_node(node, selected)
+                await self._add_movies_to_node(node, selected)
             else:
-                new_node = self.repo.add_child(node.id, random_name())
-                self._construct_cluster(new_node, selected, depth + 1)
+                new_node = await self.repo.add_child(node.id, random_name())
+                await self._construct_cluster(new_node, selected, depth + 1)
 
 
-    def construct_graph(self):
-        movies = self._construct_dataset()
-        root = self.repo.create_root()
-        self._construct_cluster(root, movies, 0)
+    async def construct_graph(self):
+        async for db in get_db():
+            self.repo = GraphRepository(db)
+
+            movies = self._construct_dataset()
+            root = await self.repo.create_root()
+            await self._construct_cluster(root, movies, 0)
