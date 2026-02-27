@@ -1,11 +1,13 @@
 services:
-  # cinegraph:
-  #   build: ../backend
-  #   volumes:
-  #     - ../backend/data:/app/data
-  #     - ../backend/emotion_analysis/embeddings:/app/emotion_analysis
-  #   env_file:
-  #     - .env
+  cinegraph:
+    build: ../backend
+    volumes:
+      - ../backend/data:/app/data
+      - ../backend/emotion_analysis/embeddings:/app/emotion_analysis/embeddings
+      - ../backend/preprocessing/ready_data:/app/preprocessing/ready_data
+      - ../backend/emotion_analysis/weights:/app/emotion_analysis/weights
+    env_file:
+      - .env
 
   postgres:
     image: pgvector/pgvector:pg17
