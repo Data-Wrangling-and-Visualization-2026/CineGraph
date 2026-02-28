@@ -67,10 +67,15 @@ class GraphSettings(BaseModel):
     num_clusters: int = 5
 
 
+class NameCreatorSettings(BaseModel):
+    model_path: str = './emotion_analysis/weights/qwen/model.gguf'
+
+
 class Settings(BaseModel):
     scraper: ScraperSettings = ScraperSettings()
     emotion_analyzer: EmotionAnalyzerSettings = EmotionAnalyzerSettings()
     preprocessor: PreprocessorSettings = PreprocessorSettings()
+    name_creator: NameCreatorSettings = NameCreatorSettings()
     db: DBSettings = DBSettings()
     graph: GraphSettings = GraphSettings()
     base_dir: str = BASE_DIR
