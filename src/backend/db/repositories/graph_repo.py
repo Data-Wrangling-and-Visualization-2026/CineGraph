@@ -22,7 +22,7 @@ class GraphRepository:
             return root
 
         root = Graph(
-            name='root',
+            name='All movies',
             path=Ltree('root'),
             type='node',
         )
