@@ -2,11 +2,23 @@
 
 
 <!-- PROJECT SHIELDS -->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![License][license-shield]][license-url]
+<p align="center">
+  <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/graphs/contributors">
+    <img src="https://img.shields.io/github/contributors/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge" />
+  </a>
+  <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/network/members">
+    <img src="https://img.shields.io/github/forks/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge" />
+  </a>
+  <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/stargazers">
+    <img src="https://img.shields.io/github/stars/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge" />
+  </a>
+  <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues">
+    <img src="https://img.shields.io/github/issues/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge" />
+  </a>
+  <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/blob/master/LICENSE.txt">
+    <img src="https://img.shields.io/github/license/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge" />
+  </a>
+</p>
 
 
 
@@ -211,7 +223,7 @@ Additionally, it is highly recommended to follow [Conventional Commits](https://
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See `LICENSE` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -254,7 +266,7 @@ Maybe, we will add it later...
 [issues-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues
 
 [license-shield]: https://img.shields.io/github/license/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
-[license-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/blob/master/LICENSE.txt
+[license-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/blob/master/LICENSE
 
 <!-- Tech Stack -->
 
