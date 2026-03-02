@@ -1,17 +1,19 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
+
 
 <!-- PROJECT SHIELDS -->
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![project_license][license-shield]][license-url]
+[![License][license-shield]][license-url]
+
+
 
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/github_username/CineGraph">
+  <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph">
     <!-- Replace this with your actual project logo -->
     <!-- <img src="https://cdn-icons-png.flaticon.com/512/3172/3172554.png" alt="Logo" width="80" height="80"> -->
   </a>
@@ -23,9 +25,9 @@
     <br />
     <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph">View Demo</a>
     &middot;
-    <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph">Report Bug</a>
+    <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues">Report Bug</a>
     &middot;
-    <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph">Request Feature</a>
+    <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues">Request Feature</a>
   </p>
 </div>
 
@@ -81,7 +83,7 @@ Users can inspect emotionally close movies and select a film to view its sentime
 
 Here is an overview of the core structure and module responsibilities:
 
-~~~text
+```text
 CINEGRAPH/
 ├── .venv/                     # Virtual environment
 ├── src/
@@ -114,7 +116,7 @@ CINEGRAPH/
 ├── .gitignore
 ├── README.md                  # Project documentation
 └── requirements_full.txt      # Global project dependencies
-~~~
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -127,18 +129,18 @@ To get a local copy up and running follow these simple steps.
 
 Ensure you have the following installed on your machine:
 * [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-*[Python 3.11+](https://www.python.org/downloads/) (if running natively)
+* [Python 3.11+](https://www.python.org/downloads/) (if running natively)
 
 ### Installation
 
 1. Clone the repo
-   ~~~sh
-   git https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph.git
+   ```sh
+   git clone https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph.git
    cd CineGraph
-   ~~~
+   ```
 
 2. **Environment Variables**: Create your `.env` files. You will need to populate both `src/backend/.env` and `src/infra/.env` with the following template:
-   ~~~env
+   ```env
    # List of proxies for scraping
    IP_1=
    IP_2=
@@ -146,20 +148,20 @@ Ensure you have the following installed on your machine:
    PROXY_PORT=3128
 
    DB_URL="postgresql+asyncpg://{user}:{password}@{host}:{port}/movies"
-   ~~~
+   ```
 
 3. Spin up the infrastructure and application using Docker Compose:
-   ~~~sh
+   ```sh
    cd src/infra
    docker-compose up --build
-   ~~~
+   ```
 
 4. *(Optional)* If you wish to run the app natively without Docker:
-   ~~~sh
+   ```sh
    python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements_full.txt
-   ~~~
+   ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -216,7 +218,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Maybe, we will add it latter...
+Maybe, we will add it later...
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -228,24 +230,46 @@ Maybe, we will add it latter...
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
 [contributors-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/graphs/contributors
+
 [forks-shield]: https://img.shields.io/github/forks/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
 [forks-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/network/members
+
 [stars-shield]: https://img.shields.io/github/stars/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
 [stars-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/stargazers
-[issues-shield]: https://img.shields.io/github/issues/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge[issues-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues
+
+[issues-shield]: https://img.shields.io/github/issues/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
+[issues-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues
+
 [license-shield]: https://img.shields.io/github/license/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
 [license-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/blob/master/LICENSE.txt
 
 <!-- Tech Stack Badges -->
-[Python.js]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
-[Python-url]: https://www.python.org/[LangChain.js]: https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white
+<!-- SHIELDS -->
+[issues-shield]: https://img.shields.io/github/issues/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
+[issues-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues
+
+[license-shield]: https://img.shields.io/github/license/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
+[license-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/blob/master/LICENSE.txt
+
+<!-- Tech Stack -->
+
+[Python-url]: https://www.python.org/
+
+[LangChain.js]: https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white
 [LangChain-url]: https://python.langchain.com/
+
 [PostgreSQL.js]: https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white
 [PostgreSQL-url]: https://www.postgresql.org/
+
 [Selenium.js]: https://img.shields.io/badge/-selenium-43B02A?style=for-the-badge&logo=selenium&logoColor=white
-[Selenium-url]: https://www.selenium.dev/[Docker.js]: https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white
+[Selenium-url]: https://www.selenium.dev/
+
+[Docker.js]: https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white
 [Docker-url]: https://www.docker.com/
+
+[Python.js]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
