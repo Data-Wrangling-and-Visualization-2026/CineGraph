@@ -1,198 +1,251 @@
-# 🎬 CineGraph
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<a id="readme-top"></a>
 
-CineGraph is a data-driven web application that processes raw subtitles
-from **45,000+ movies** to generate interactive **Emotional
-Seismographs**.
+<!-- PROJECT SHIELDS -->
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![project_license][license-shield]][license-url]
 
-Users can: - Select a movie - Visualize its sentiment arc over time -
-Zoom into emotional peaks - Identify the exact phrases (lemmas) driving
-emotional context
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/github_username/CineGraph">
+    <!-- Replace this with your actual project logo -->
+    <!-- <img src="https://cdn-icons-png.flaticon.com/512/3172/3172554.png" alt="Logo" width="80" height="80"> -->
+  </a>
 
-The system combines a large-scale scraping pipeline with context-aware
-NLP analysis to reveal the hidden structure of storytelling.
+<h3 align="center">CineGraph</h3>
 
-**Main subtitle source:** https://subslikescript.com/
+  <p align="center">
+    A data-driven web application that processes raw subtitles from 40,000 movies to generate interactive "Emotional Seismographs"
+    <br />
+    <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph">View Demo</a>
+    &middot;
+    <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph">Report Bug</a>
+    &middot;
+    <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph">Request Feature</a>
+  </p>
+</div>
 
-------------------------------------------------------------------------
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+        <li><a href="#project-structure">Project Structure</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#data-pipeline">Data pipeline</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
 
-# 🏗 Architecture Overview
+<!-- ABOUT THE PROJECT -->
+## About The Project
 
-CineGraph is built as a modular backend system with:
+We are building **CineGraph**, a data-driven web application that processes raw subtitles from 40,000 movies to generate interactive ”Emotional Seismographs”.
 
--   Scraping Layer → Collects subtitles\
--   Preprocessing Layer → Cleans and structures text\
--   Emotion Analysis Engine → Generates embeddings & sentiment scores\
--   Database Layer → Stores movies, subtitles, embeddings, metadata\
--   API Layer → Serves processed data\
--   Clustering & Graph Module → Builds narrative graphs\
--   Dockerized Infrastructure → Ensures reproducible environment
+Users can inspect emotionally close movies and select a film to view its sentiment arc (consisting of 6 main [emotions](https://www.verywellmind.com/an-overview-of-the-types-of-emotions-4163976)) over time. The system combines a massive scraping pipeline with NLP analysis and advanced clustering techniques to reveal the hidden structure of storytelling.
 
-------------------------------------------------------------------------
+*Main subtitle source:* [SubsLikeScript](https://subslikescript.com/)
 
-# 🛠 Tech Stack
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
--   Python --- Core backend language\
--   LangChain -- NLP orchestration & embedding workflows\
--   PostgreSQL -- Primary relational database\
--   Selenium -- Subtitle scraping\
--   Docker & Docker Compose -- Containerization\
--   AsyncPG -- Async PostgreSQL driver
+### Built With
 
-------------------------------------------------------------------------
+* [![Python][Python.js]][Python-url]
+* [![LangChain][LangChain.js]][LangChain-url]
+* [![PostgreSQL][PostgreSQL.js]][PostgreSQL-url]
+* [![Selenium][Selenium.js]][Selenium-url]
+* [![Docker][Docker.js]][Docker-url]
 
-# 📂 Project Structure
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-    CINEGRAPH/
-    │
-    ├── .venv/                     # Local virtual environment
-    │
-    ├── src/
-    │   ├── backend/
-    │   │
-    │   │   ├── api/               # FastAPI routes / endpoints
-    │   │   │
-    │   │   ├── clustering/        # Graph building & movie clustering logic
-    │   │   │   ├── balance.json
-    │   │   │   ├── graph_creator.py
-    │   │   │   ├── unbalanced.json
-    │   │   │   └── utils.py
-    │   │   │
-    │   │   ├── data/              # Data storage helpers
-    │   │   │
-    │   │   ├── db/                # Database layer
-    │   │   │   ├── migrations/    # DB migration scripts
-    │   │   │   ├── models/        # SQLAlchemy models
-    │   │   │   ├── repositories/  # Repository pattern abstraction
-    │   │   │   ├── base.py        # Base model config
-    │   │   │   └── session.py     # Async DB session management
-    │   │   │
-    │   │   ├── emotion_analysis/  # NLP & embedding pipeline
-    │   │   │   ├── embeddings/    # Embedding generation
-    │   │   │   ├── weights/       # Model weights
-    │   │   │   ├── model.py       # Sentiment model logic
-    │   │   │   └── experiments/   # Experimental NLP features
-    │   │   │
-    │   │   ├── preprocessing/     # Subtitle cleaning & normalization
-    │   │   │   ├── raw_data/      # Raw subtitle dumps
-    │   │   │   ├── passthrough.py
-    │   │   │   └── preprocessing_agent.py
-    │   │   │
-    │   │   ├── scraping/          # Selenium-based scraping pipeline
-    │   │   │   ├── scraper.py
-    │   │   │   └── utils.py
-    │   │   │
-    │   │   ├── services/          # Business logic layer
-    │   │   │
-    │   │   ├── main.py            # Application entry point
-    │   │   ├── settings.py        # Environment & config management
-    │   │   ├── dockerfile         # Backend container config
-    │   │   ├── requirements.txt   # Python dependencies
-    │   │   └── .env               # Backend environment config
-    │
-    ├── infra/
-    │   ├── docker-compose.yml     # Multi-container setup
-    │   └── .env                   # Infrastructure-level env variables
-    │
-    ├── .gitignore
-    ├── README.md
-    └── requirements_full.txt
+### Project Structure
 
-------------------------------------------------------------------------
+Here is an overview of the core structure and module responsibilities:
 
-# 🔐 Environment Configuration
+~~~text
+CINEGRAPH/
+├── .venv/                     # Virtual environment
+├── src/
+│   ├── backend/               # Main Backend application
+│   │   ├── api/               # API endpoints and routing
+│   │   ├── clustering/        # Graph creation and dataset processing algorithms
+│   │   │   ├── graph_creator.py
+│   │   │   └── utils.py
+│   │   ├── data/              # Local data/storage dumps
+│   │   ├── db/                # Database configurations, models, and migrations
+│   │   │   ├── base.py
+│   │   │   └── session.py
+│   │   ├── emotion_analysis/  # NLP analysis models, embeddings, and weights
+│   │   │   └── model.py
+│   │   ├── experiments/       # Sandbox for testing scripts and models
+│   │   ├── preprocessing/     # LangChain agents for data cleaning
+│   │   │   └── preprocessing_agent.py
+│   │   ├── scraping/          # Selenium pipeline for pulling raw subtitles
+│   │   │   ├── scraper.py
+│   │   │   └── utils.py
+│   │   ├── services/          # Core business logic and external integrations
+│   │   ├── .env               # Backend specific environment variables
+│   │   ├── dockerfile         # Dockerfile for backend service
+│   │   ├── main.py            # Application entry point (Pipeline + FastAPI)
+│   │   ├── requirements.txt   # Backend-specific dependencies
+│   │   └── settings.py        # App configuration settings
+│   └── infra/                 # Infrastructure and Orchestration
+│       ├── .env               # Infrastructure specific environment variables
+│       └── docker-compose.yml # Docker Compose to spin up app and PostgresDB
+├── .gitignore
+├── README.md                  # Project documentation
+└── requirements_full.txt      # Global project dependencies
+~~~
 
-Each `.env` file must include:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-``` env
-# List of proxies for scraping
-IP_1=
-IP_2=
-IP_N=
-PROXY_PORT=3128
+<!-- GETTING STARTED -->
+## Getting Started
 
-# DB Related things
-POSTGRES_USER=user
-POSTGRES_PASSWORD=password
-POSTGRES_DB=movies
+To get a local copy up and running follow these simple steps.
 
-DB_URL="postgresql+asyncpg://user:password@localhost:5432/movies"
-```
+### Prerequisites
 
-### Notes
+Ensure you have the following installed on your machine:
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+*[Python 3.11+](https://www.python.org/downloads/) (if running natively)
 
--   Multiple proxy IPs improve scraping resilience.
--   `DB_URL` uses asyncpg driver.
--   Ensure PostgreSQL is running before starting the backend.
+### Installation
 
-------------------------------------------------------------------------
+1. Clone the repo
+   ~~~sh
+   git https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph.git
+   cd CineGraph
+   ~~~
 
-# 🐳 Running with Docker (Recommended)
+2. **Environment Variables**: Create your `.env` files. You will need to populate both `src/backend/.env` and `src/infra/.env` with the following template:
+   ~~~env
+   # List of proxies for scraping
+   IP_1=
+   IP_2=
+   IP_N=
+   PROXY_PORT=3128
 
-## Build & Start Containers
+   DB_URL="postgresql+asyncpg://{user}:{password}@{host}:{port}/movies"
+   ~~~
 
-    docker-compose up --build
+3. Spin up the infrastructure and application using Docker Compose:
+   ~~~sh
+   cd src/infra
+   docker-compose up --build
+   ~~~
 
-## Stop Containers
+4. *(Optional)* If you wish to run the app natively without Docker:
+   ~~~sh
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   pip install -r requirements_full.txt
+   ~~~
 
-    docker-compose down
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-------------------------------------------------------------------------
+<!-- USAGE EXAMPLES -->
+## Data pipeline
 
-# 🧪 Running Locally (Without Docker)
+* **Scraping**: The Selenium scraper (`src/backend/scraping/scraper.py`) utilizes the proxy list from your `.env` to scrape scripts from *subslikescript.com* extending request rate limitation (of course, with all the grace for the source website). The pipeline will also work without proxy servers.
+* **Preprocessing**: Raw subtitles are passed to the LangChain agent (`src/backend/preprocessing/preprocessing_agent.py`) to clean the original text.
+* **Emotion Analysis**: The NLP model (`src/backend/emotion_analysis/model.py`) evaluates the emotional trajectory of the subtitle windows. The model outputs embedding with 6 emotion intensities.
+* **Clustering & Graphing**: Graph modules process the data and saves it in tree-based format to `PostgreSQL`.
 
-## Create Virtual Environment
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-    python -m venv .venv
-    source .venv/bin/activate   # Linux / Mac
+<!-- ROADMAP -->
+## Roadmap
 
-## Install Dependencies
+- [x] Build Selenium scraping pipeline for SubsLikeScript
+- [x] Integrate LangChain for data preprocessing
+- [x] Implement Emotion Analysis with NLP model
+- [x] Integrate PostgreSQL
+- [x] Complete graph clustering algorithm
+- [ ] Design & Implement main API
+- [ ] Build interactive web frontend for the Graph representation
+- [ ] Build interactive Web Frontend for the "Emotional Seismographs"
 
-    pip install -r requirements.txt
+See the [open issues](https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues) for a full list of proposed features (and known issues).
 
-## Run Backend
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-    uvicorn src.backend.main:app --reload
+<!-- CONTRIBUTING -->
+## Contributing
 
-------------------------------------------------------------------------
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-# 🔄 Data Pipeline Flow
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
 
-Scraping (Selenium) ↓ Raw Subtitle Storage ↓ Preprocessing (Cleaning +
-Lemmatization) ↓ Embedding Generation (LangChain) ↓ Emotion Scoring
-Model ↓ Database Storage ↓ Graph & Clustering ↓ API → Frontend
-Visualization
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feat/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feat/AmazingFeature`)
+5. Open a Pull Request
 
-------------------------------------------------------------------------
+Additionally, it is highly recommended to follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) style guide.
 
-# 📊 Emotional Seismograph Concept
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-For each movie:
+<!-- LICENSE -->
+## License
 
-1.  Subtitles are segmented by time.
-2.  Each segment is embedded using contextual embeddings.
-3.  Sentiment intensity is computed.
-4.  Scores are plotted over time.
-5.  Peaks are linked to specific lemmas driving emotional weight.
+Distributed under the MIT License. See `LICENSE.txt` for more information.
 
-This transforms raw subtitle text into a narrative emotion curve.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-------------------------------------------------------------------------
+<!-- CONTACT -->
+## Contact
 
-# 🚀 Future Improvements
+Maybe, we will add it latter...
 
--   Frontend integration (React / D3.js for visualization)
--   Caching layer (Redis)
--   Horizontal scraping workers
--   Vector database integration
--   Movie recommendation based on emotional similarity
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-------------------------------------------------------------------------
+<!-- ACKNOWLEDGMENTS -->
+## Acknowledgments
 
-# 👥 Project Vision
+* [SubsLikeScript](https://subslikescript.com/) - Main Subtitle Source
+* [LangChain](https://python.langchain.com/) - LLM Application Framework
 
-CineGraph aims to answer:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-> What does emotion look like over time in storytelling?
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
+[contributors-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
+[forks-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/network/members
+[stars-shield]: https://img.shields.io/github/stars/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
+[stars-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge[issues-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues
+[license-shield]: https://img.shields.io/github/license/Data-Wrangling-and-Visualization-2026/CineGraph.svg?style=for-the-badge
+[license-url]: https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/blob/master/LICENSE.txt
 
-By converting dialogue into structured emotional signals, we uncover
-narrative patterns hidden in plain text.
+<!-- Tech Stack Badges -->
+[Python.js]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
+[Python-url]: https://www.python.org/[LangChain.js]: https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white
+[LangChain-url]: https://python.langchain.com/
+[PostgreSQL.js]: https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white
+[PostgreSQL-url]: https://www.postgresql.org/
+[Selenium.js]: https://img.shields.io/badge/-selenium-43B02A?style=for-the-badge&logo=selenium&logoColor=white
+[Selenium-url]: https://www.selenium.dev/[Docker.js]: https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white
+[Docker-url]: https://www.docker.com/
