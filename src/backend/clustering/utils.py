@@ -5,6 +5,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import Field, create_model
 from settings import settings
 
+# Base model
 llm = ChatLlamaCpp(
     model_path=settings.name_creator.model_path,
     n_ctx=8192,
@@ -32,7 +33,20 @@ Rules:
 6. Do NOT summarize the groups into one name. You must name each group individually.
 """
 
-def validate_names(names: list[str], expected_length: int):
+def validate_names(names: list[str], expected_length: int) -> bool:
+    """
+    Validates the created list of names.
+    Checks:
+        1. the consistency of the length with expected
+        2. maximum name length (max - 4)
+
+    Args:
+        names (list[str]): list of names
+        expected_length (int): the desired number of generated names
+
+    Returns:
+        bool: valid/not_valid
+    """
     if names is None or len(names) != expected_length:
         return False
 
@@ -42,7 +56,17 @@ def validate_names(names: list[str], expected_length: int):
 
     return True
 
+
 def clean_titles(titles: list[str]) -> list[str]:
+    """
+    Cleans the titles from non-ascii symbols
+
+    Args:
+        titles (list[str]): titles
+
+    Returns:
+        list[str]: cleaned text
+    """
     return[
         title.encode('ascii', errors='ignore').decode('ascii')
         for title in titles
@@ -50,27 +74,34 @@ def clean_titles(titles: list[str]) -> list[str]:
 
 
 def generate_context_aware_node_name(parent_name: str, groups: list[dict]) -> list[str]:
+    """
+    Generates the list of names based on the titles, emotion shifts and parent node name
+
+    Args:
+        parent_name (str): parent node's name
+        groups (list[dict]): list of groups: {'titles', 'shift'}
+
+    Returns:
+        list[str]: generated names
+    """
     num_groups = len(groups)
 
-    # ------------------------------------------------------------------
     # 1. DYNAMICALLY CREATE THE SCHEMA
     # This creates a schema like:
     # { "group_1": "...", "group_2": "...", ..., "group_N": "..." }
-    # This physically forces the Llama.cpp grammar to output N items.
-    # ------------------------------------------------------------------
+    # This physically forces the Llama.cpp grammar to output N items
     fields = {
         f"group_{i+1}": (str, Field(description=f"The unique 2-4 word category name specifically for Group {i+1}"))
         for i in range(num_groups)
     }
     DynamicNamesModel = create_model('DynamicNamesModel', **fields)
 
-    # Bind the dynamic model for this specific call
     dynamic_structured_llm = llm.with_structured_output(DynamicNamesModel)
 
-    # 2. Build the prompt
     message = f"Parent Category: '{parent_name}'\n\n"
     message += "Create specific sub-category names for the following distinct groups:\n\n"
 
+    # Populate prompt
     for idx, group in enumerate(groups):
         message += f'Group {idx + 1}:\n'
         message += f"- Emotional Shift from Parent: {group['shift']}\n"
@@ -95,5 +126,5 @@ def generate_context_aware_node_name(parent_name: str, groups: list[dict]) -> li
         except Exception as e:
             print(f'Retry LLM attempt {attempt+1} failed: {e}')
 
-    print(f"Failed to generate valid names for {parent_name}. Using deterministic fallbacks.")
+    print(f'Failed to generate valid names for {parent_name}')
     return[f"{parent_name.replace(' ', '_')}_Subgroup_{i+1}" for i in range(num_groups)]

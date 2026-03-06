@@ -8,14 +8,12 @@ from pathlib import Path
 from langchain.agents import create_agent
 from langchain_community.chat_models import ChatLlamaCpp
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_core.runnables import RunnableLambda
+from langchain_core.runnables import Runnable, RunnableLambda
 from langchain_core.tools import tool
 from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter, TextSplitter
 from pydantic import BaseModel, Field
 from settings import settings
-
-# TODO: check dockerfile and docker compose yml
 
 
 @tool
@@ -160,12 +158,22 @@ class FormattedResponse(BaseModel):
 
 
 class PreprocessingAgent:
+    """
+    Agent for preprocessing.
 
+    Pipeline:
+        1. Dumping system prompt and subtitles into chat format
+        2. Passing this chat to agent, which can call tools
+        3. Passing agent's output to LLM to extract cleaned text
+
+    Second LLM is used, since single agent will struggle dealing with heavy prompt,
+    tools and requirements for structured output
+    """
     def __init__(self):
 
-        self.use_hugging_face = settings.preprocessor.use_hugging_face
+        self.use_hugging_face = settings.preprocessor.use_hugging_face # Flag for using local or external LLM
         self.output_path = settings.preprocessor.output_path
-        self.num_workers = cpu_count()
+        self.num_workers = cpu_count() # If using external model several workers can be used in parallel
 
         self.prompt ="""Your goal is to clean raw subtitle text step by step using available tools.
             ## Input text format:
@@ -190,8 +198,16 @@ class PreprocessingAgent:
             """
 
 
-    def _setup_pipeline(self, tools: list):
+    def _setup_pipeline(self, tools: list) -> Runnable:
+        """
+        Initializes the pipeline
 
+        Args:
+            tools (list): list of available tools
+
+        Returns:
+            Runnable: Runnable pipeline
+        """
         if self.use_hugging_face:
             endpoint = HuggingFaceEndpoint(
                 repo_id=settings.preprocessor.model,
@@ -233,7 +249,13 @@ class PreprocessingAgent:
 
 
     def _init_tools(self) -> list:
+        """
+        Provides the list of available tools. This method is required due to
+        function serialization problem (when using several workers)
 
+        Returns:
+            list: tools
+        """
         return [
             remove_timestamps,
             remove_brackets_content,
@@ -248,20 +270,34 @@ class PreprocessingAgent:
         ]
 
 
-    def invoke(self, pipeline, splitter, text: str) -> str | None:
+    def invoke(self, pipeline: Runnable, splitter: TextSplitter, text: str) -> str | None:
+        """
+        Preprocesses the text. Additionally, splits it to chunks to avoid
+        context overflow
 
+        Args:
+            pipeline (Runnable): pipeline for preprocessing
+            splitter (TextSplitter): text splitter. Defaults to RecursiveCharacterSplitter
+            text (str): subtitles
+
+        Returns:
+            str | None: cleaned text
+        """
         texts = splitter.split_text(text)
 
         ready_parts = []
         for splitted_text in texts:
             response = pipeline.invoke(splitted_text)
 
+            # Some HuggingFace models struggles with formatted response
+            # So we iterate over all keys and try to find ANY text
             if self.use_hugging_face:
                 for key in response.keys():
                     if 'text' in key.lower():
                         ready_parts.append(response[key].strip())
                         break
             else:
+                # Local models have a bit different schema, so they always will have this
                 ready_parts.append(response.CLEANED_TEXT.strip())
 
         if not len(ready_parts):
@@ -270,14 +306,22 @@ class PreprocessingAgent:
         return ' '.join(ready_parts).strip()
 
 
-    def analyze_file(self, pipeline, splitter, input_path: Path) -> None:
+    def analyze_file(self, pipeline: Runnable, splitter: TextSplitter, input_path: Path) -> None:
+        """
+        Loads file with subtitles, cleans it, and saves back
+
+        Args:
+            pipeline (Runnable): preprocessing pipeline
+            splitter (_type_): text splitter
+            input_path (Path): path to subtitles
+        """
         with open(input_path, 'r', encoding='utf-8') as f:
             text = f.read()
 
         print(f'Processing {input_path.name}')
         start_time = time.time()
 
-        content = self.invoke(pipeline, splitter, text)
+        content = self.invoke(pipeline, splitter, text) # cleaning logic
 
         self.output_path.mkdir(parents=True, exist_ok=True)
 
@@ -292,6 +336,12 @@ class PreprocessingAgent:
 
 
     def _select_filenames(self) -> list[Path]:
+        """
+        Collects all the files with subtitles.
+
+        Returns:
+            list[Path]: list with path for each file
+        """
         names = []
 
         for filepath in glob.glob(
@@ -301,15 +351,20 @@ class PreprocessingAgent:
 
         return names
 
+
     def _start_worker(self, files: list[Path], worker_id: int = 0) -> None:
         """
-        Starts worker.
+        Starts worker. Each worker has its own pipeline, set of tools, and
+        text splitter
 
         Args:
             files (list[Path]): list of files to be preprocessed
         """
         print(f'Worker {worker_id} is preparing')
 
+        # Note: When using multiprocessing, each process will serialize
+        # self and any other referenced object, but langchain tools are not
+        # serializable. So separate method for tools is required
         tools = self._init_tools()
         pipeline = self._setup_pipeline(tools)
         splitter = RecursiveCharacterTextSplitter(
