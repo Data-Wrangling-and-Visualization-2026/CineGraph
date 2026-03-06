@@ -142,6 +142,21 @@ class NameCreatorSettings(BaseModel):
     )
 
 
+class APISettings(BaseModel):
+    app_path: str = Field(
+        default='api.api:app',
+        description='Path to file with FastAPI app'
+    )
+
+    host: str = Field(
+        default='0.0.0.0',
+    )
+
+    port: int = Field(
+        default=int(os.environ['API_PORT']),
+    )
+
+
 class Settings(BaseModel):
     scraper: ScraperSettings = ScraperSettings()
     emotion_analyzer: EmotionAnalyzerSettings = EmotionAnalyzerSettings()
@@ -149,6 +164,7 @@ class Settings(BaseModel):
     name_creator: NameCreatorSettings = NameCreatorSettings()
     db: DBSettings = DBSettings()
     graph: GraphSettings = GraphSettings()
+    api: APISettings = APISettings()
     base_dir: str = BASE_DIR
 
 
