@@ -223,3 +223,7 @@ passthrough.py
 
 # Postgres
 postgres_data/
+
+# Temporary outputs for debug
+balanced.json
+unbalanced.json

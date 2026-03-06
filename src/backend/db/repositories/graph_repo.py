@@ -7,11 +7,25 @@ from sqlalchemy_utils import Ltree
 
 
 class GraphRepository:
+    """
+    Repository for performing db related operations.
+
+    Core idea is to use Ltree for tree-structured graph, since it
+    allows fast lookups. For vectors - pgvector is used
+    """
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
 
     async def create_root(self) -> Graph:
+        """
+        Creates root node
+
+        Returns:
+            Graph: root node
+        """
+
+        # Check if root already exists
         result = await self.session.execute(
             select(Graph).where(Graph.path == Ltree('root'))
         )
@@ -21,8 +35,9 @@ class GraphRepository:
             print('Root already exists')
             return root
 
+        # Create a new one
         root = Graph(
-            name='root',
+            name='All movies',
             path=Ltree('root'),
             type='node',
         )
@@ -35,6 +50,19 @@ class GraphRepository:
 
 
     async def add_child(self, parent_id: int, name: str) -> Graph:
+        """
+        Adds node to graph
+
+        Args:
+            parent_id (int): id of parent's node
+            name (str): node name
+
+        Raises:
+            RuntimeError: No parent with passed id
+
+        Returns:
+            Graph: created node
+        """
         parent = await self.session.get(Graph, parent_id)
 
         if parent is None:
@@ -63,11 +91,25 @@ class GraphRepository:
     async def get_immediate_children(
         self, node_id: int
     ) -> dict[str, Graph | list[Graph] | list[Movie]]:
-        node = await self.session.get(Graph, node_id)
+        """
+        Gets all the node's children
+
+        Args:
+            node_id (int): node's id
+
+        Raises:
+            RuntimeError: no node with passed id
+
+        Returns:
+            dict[str, Graph | list[Graph] | list[Movie]]: dict with node,
+                child nodes, and directly connected movies
+        """
+        node = await self.session.get(Graph, node_id) # get the node to extract its path
 
         if node is None:
             raise RuntimeError(f'No node with id {node_id}')
 
+        # .*{1} selects all the 1 lvl depth children
         query_path = str(node.path) + '.*{1}'
 
         result = await self.session.execute(
@@ -77,6 +119,7 @@ class GraphRepository:
         )
         children = result.scalars().all()
 
+        # Check for movies in this node
         result = await self.session.execute(
             select(Movie).where(Movie.graph_id == node_id)
         )
@@ -96,6 +139,18 @@ class GraphRepository:
         year: int,
         vectors: list[list[float]],
     ) -> Movie:
+        """
+        Adds movie to the node
+
+        Args:
+            graph_id (int): node's id
+            title (str): movie title
+            year (int): movie year
+            vectors (list[list[float]]): movie's embeddings
+
+        Returns:
+            Movie: created movie instance
+        """
         movie = Movie(
             graph_id=graph_id,
             title=title,
