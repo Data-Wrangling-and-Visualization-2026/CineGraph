@@ -160,6 +160,8 @@ Ensure you have the following installed on your machine:
    PROXY_PORT=3128
 
    DB_URL="postgresql+asyncpg://{user}:{password}@{host}:{port}/movies"
+
+   API_PORT=5555
    ```
 
 3. Spin up the infrastructure and application using Docker Compose:
