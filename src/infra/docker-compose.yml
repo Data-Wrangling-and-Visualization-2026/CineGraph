@@ -1,6 +1,7 @@
 services:
-  cinegraph:
+  backend:
     build: ../backend
+    container_name: backend
     volumes:
       - ../backend/data:/app/data
       - ../backend/emotion_analysis/embeddings:/app/emotion_analysis/embeddings
@@ -10,6 +11,14 @@ services:
       - .env
     ports:
       - "${API_PORT}:${API_PORT}"
+
+  frontend:
+    build: ../frontend
+    container_name: frontend
+    ports:
+      - "${FRONT_PORT}:${FRONT_PORT}"
+    depends_on:
+      - backend
 
   postgres:
     image: pgvector/pgvector:pg17

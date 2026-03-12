@@ -6,7 +6,7 @@ import type { MyNode } from './types/graph';
 
 export default function App() {
   const [selectedNode, setSelectedNode] = useState<MyNode | null>(null); // Для сайдбара
-  
+
   // НОВОЕ СОСТОЯНИЕ: ID узла 1-го уровня, в который мы "провалились"
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
@@ -28,12 +28,12 @@ export default function App() {
           return fullGraphData.links.some(link => {
             const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
             const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-            
+
             return (sourceId === activeCategory && targetId === node.id) ||
                    (targetId === activeCategory && sourceId === node.id);
           });
         }
-        
+
         // Все остальные узлы (другие категории и чужие дочерние узлы) отбрасываем
         return false;
       });
@@ -82,10 +82,10 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', background: '#0f0f11' }}>
-      
+
       {/* КНОПКА ВОЗВРАТА (появляется только если мы внутри категории) */}
       {activeCategory && (
-        <button 
+        <button
           onClick={handleGoBack}
           style={{
             position: 'absolute',
@@ -109,16 +109,16 @@ export default function App() {
         </button>
       )}
 
-      <Graph 
-        data={visibleData} 
+      <Graph
+        data={visibleData}
         selectedNode={selectedNode}
-        onNodeClick={handleNodeClick} 
-        onBackgroundClick={handleBackgroundClick} 
+        onNodeClick={handleNodeClick}
+        onBackgroundClick={handleBackgroundClick}
       />
-      
-      <Sidebar 
-        selectedNode={selectedNode} 
-        onClose={() => setSelectedNode(null)} 
+
+      <Sidebar
+        selectedNode={selectedNode}
+        onClose={() => setSelectedNode(null)}
       />
     </div>
   );
