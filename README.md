@@ -1,13 +1,3 @@
----
-title: CineGraph
-emoji: ⚡
-colorFrom: green
-colorTo: green
-sdk: docker
-pinned: false
-license: mit
----
-
 <a id="readme-top"></a>
 
 
