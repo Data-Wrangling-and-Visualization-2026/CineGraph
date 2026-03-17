@@ -9,14 +9,14 @@ export function Sidebar({ selectedNode, onClose }: SidebarProps) {
   if (!selectedNode) return null;
 
   return (
-    <div 
-      style={{ 
-        position: 'absolute', 
-        top: 0, 
-        right: 0, 
-        width: '300px', 
-        background: '#2e2c2c', 
-        height: '100vh', 
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        width: '300px',
+        background: '#2e2c2c',
+        height: '100vh',
         padding: '20px',
         boxShadow: '-4px 0 15px rgba(0,0,0,0.1)'
       }}

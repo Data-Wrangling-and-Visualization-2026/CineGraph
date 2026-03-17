@@ -11,14 +11,14 @@ interface GraphProps {
 }
 
 const GROUP_COLORS: Record<number, string> = {
-  1: '#61dafb',
-  2: '#bd34fe',
-  3: '#ff4b4b',
+  1: '#61dafb', // Blue (Root)
+  2: '#bd34fe', // Purple (Category)
+  3: '#ff4b4b', // Red (Movie)
 };
 
 export function Graph({ data, selectedNode, onNodeClick, onBackgroundClick }: GraphProps) {
   const fgRef = useRef<ForceGraphMethods<any, any> | undefined>(undefined);
-  
+
   // Состояние: на какой узел сейчас наведена мышь
   const[hoverNode, setHoverNode] = useState<MyNode | null>(null);
 
@@ -33,7 +33,7 @@ export function Graph({ data, selectedNode, onNodeClick, onBackgroundClick }: Gr
 
     if (activeNode) {
       nodes.add(activeNode.id);
-      
+
       // Ищем все связи этого узла
       data.links.forEach((link: any) => {
         // Библиотека мутирует links, заменяя ID на объекты узлов, поэтому делаем проверку:
@@ -60,7 +60,7 @@ export function Graph({ data, selectedNode, onNodeClick, onBackgroundClick }: Gr
     <ForceGraph2D
       ref={fgRef}
       graphData={data}
-      
+
       // --- НАСТРОЙКА ГРАНЕЙ (ЛИНИЙ) ---
       // Цвет линии: если подсвечена - белая непрозрачная, иначе - серая полупрозрачная
       linkColor={(link: any) => highlightLinks.has(link) ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.1)'}
@@ -81,11 +81,11 @@ export function Graph({ data, selectedNode, onNodeClick, onBackgroundClick }: Gr
       nodeCanvasObject={(node: any, ctx, globalScale) => {
         const isHovered = hoverNode?.id === node.id;
         const isSelected = selectedNode?.id === node.id;
-        
+
         // Логика затемнения: если есть активный узел, но текущий узел не в соседях - затемняем его
         const isDimmed = (hoverNode || selectedNode) && !highlightNodes.has(node.id);
 
-        const nodeRadius = (node.size == null ? 5 : node.size); 
+        const nodeRadius = node.val ?? 6;
         const baseColor = GROUP_COLORS[node.group] || '#999';
 
         // 1. Отрисовка свечения (Halo) вокруг выделенного/наведенного узла
@@ -118,17 +118,28 @@ export function Graph({ data, selectedNode, onNodeClick, onBackgroundClick }: Gr
         // 4. Отрисовка текста (имени)
         // Текст показываем только если мы близко (globalScale > 1.2) ИЛИ узел подсвечен
         const showText = globalScale > 1.2 || isHovered || isSelected || highlightNodes.has(node.id);
-        
+
         if (showText && !isDimmed) {
           const label = node.name;
           const fontSize = 12 / globalScale;
           ctx.font = `bold ${fontSize}px Sans-Serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          
+
           // Белый текст для выделенных, серый для остальных
           ctx.fillStyle = isHovered || isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.7)';
           ctx.fillText(label, node.x, node.y + nodeRadius + (10 / globalScale));
+        }
+
+        if (node.group === 3) {
+          ctx.rect(node.x - nodeRadius, node.y - nodeRadius, nodeRadius * 2, nodeRadius * 2);
+          ctx.fillStyle = baseColor;
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, nodeRadius, 0, 2 * Math.PI, false);
+          ctx.fillStyle = baseColor;
+          ctx.fill();
         }
       }}
 
