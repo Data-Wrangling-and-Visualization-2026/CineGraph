@@ -1,13 +1,21 @@
-from fastapi import FastAPI, Query, HTTPException, Depends
-from fastapi.responses import HTMLResponse, FileResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 import os
 
+from api.base_models import MovieResponse, NodeWithChildren
 from db.repositories.graph_repo import GraphRepository
 from db.session import get_db
-from api.base_models import NodeWithChildren, NodeResponse, MovieResponse
+from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[f"http://localhost:{os.environ['FRONT_PORT']}"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")

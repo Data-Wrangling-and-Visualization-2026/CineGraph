@@ -1,5 +1,6 @@
+from typing import List, Optional
+
 from pydantic import BaseModel
-from typing import List, Optional, Any
 
 
 # Movie schemas
@@ -15,6 +16,7 @@ class MovieCreate(MovieBase):
 class MovieResponse(MovieBase):
     id: int
     graph_id: int
+    title: str
 
     class Config:
         from_attributes = True
@@ -31,7 +33,7 @@ class NodeCreate(NodeBase):
 
 class NodeResponse(NodeBase):
     id: int
-    path: str
+    # path: str
     children_count: int
 
     class Config:
@@ -40,6 +42,7 @@ class NodeResponse(NodeBase):
 
 class NodeWithChildren(NodeResponse):
     # Changed from List[NodeResponse] to List[int]
-    children_nodes: List[int] = []  # Now accepts list of node IDs
+    children_nodes: List[NodeResponse] = []
+    # children_nodes: List[int] = []  # Now accepts list of node IDs
     # Changed from List[MovieResponse] to List[int]
-    movies: List[int] = []  # Now accepts list of movie IDs
+    movies: List[MovieResponse] = []  # Now accepts list of movie IDs

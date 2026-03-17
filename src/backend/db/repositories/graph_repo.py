@@ -1,11 +1,11 @@
 from db.models.embedding import Embedding
 from db.models.graph import Graph
 from db.models.movie import Movie
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy_utils import Ltree
 from sqlalchemy.orm import selectinload
-from sqlalchemy import text
+from sqlalchemy_utils import Ltree
+
 
 class GraphRepository:
     """
@@ -118,14 +118,13 @@ class GraphRepository:
         query_path = str(node.path) + '.*{1}'
 
         result = await self.session.execute(
-            text("SELECT * FROM graph WHERE path ~ :pattern"),
-            {"pattern": query_path}
+            select(Graph).where(text("path ~ :pattern")).params(pattern=query_path)
         )
         children = result.scalars().all()
 
         # Check for movies in this node
         result = await self.session.execute(
-            select(Movie.id).where(Movie.graph_id == node_id)  # Select only the id
+            select(Movie).where(Movie.graph_id == node_id)
         )
         movies = result.scalars().all()
 
@@ -180,8 +179,17 @@ class GraphRepository:
 
         return movie
 
+
     async def get_movie(self, movie_id: int) -> Movie | None:
-        """Get a movie with its embeddings pre-loaded"""
+        """
+        Get movie's data and embeddings
+
+        Args:
+            movie_id (int): id
+
+        Returns:
+            Movie | None: movie with embeddings
+        """
         query = (
             select(Movie)
             .options(selectinload(Movie.embeddings))
