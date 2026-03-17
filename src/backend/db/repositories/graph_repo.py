@@ -4,7 +4,8 @@ from db.models.movie import Movie
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy_utils import Ltree
-
+from sqlalchemy.orm import selectinload
+from sqlalchemy import text
 
 class GraphRepository:
     """
@@ -109,19 +110,22 @@ class GraphRepository:
         if node is None:
             raise RuntimeError(f'No node with id {node_id}')
 
+        # Convert Ltree to string for serialization
+        if hasattr(node, 'path') and not isinstance(node.path, str):
+            node.path = str(node.path)
+
         # .*{1} selects all the 1 lvl depth children
         query_path = str(node.path) + '.*{1}'
 
         result = await self.session.execute(
-            select(Graph).where(
-                Graph.path.lquery(Ltree(query_path))
-            )
+            text("SELECT * FROM graph WHERE path ~ :pattern"),
+            {"pattern": query_path}
         )
         children = result.scalars().all()
 
         # Check for movies in this node
         result = await self.session.execute(
-            select(Movie).where(Movie.graph_id == node_id)
+            select(Movie.id).where(Movie.graph_id == node_id)  # Select only the id
         )
         movies = result.scalars().all()
 
@@ -175,3 +179,13 @@ class GraphRepository:
         await self.session.refresh(movie)
 
         return movie
+
+    async def get_movie(self, movie_id: int) -> Movie | None:
+        """Get a movie with its embeddings pre-loaded"""
+        query = (
+            select(Movie)
+            .options(selectinload(Movie.embeddings))
+            .where(Movie.id == movie_id)
+        )
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
