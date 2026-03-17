@@ -20,6 +20,19 @@ jobs:
             git checkout deploy
             git pull origin deploy
 
+            # This is used to download the init.sql
+            if ! command -v gdown &> /dev/null; then
+              pip install gdown
+            fi
+
+            TARGET_DIR="src/backend/services/db_service"
+            TARGET_FILE="${TARGET_DIR}/init.db"
+
+            echo "Downloading init.db from Google Drive..."
+            gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_INIT_DB_ID }}" \
+              -O "${TARGET_FILE}" --force
+            echo "Download complete."
+
             cd src/infra
 
             # Rebuild and restart the Docker containers in the background
