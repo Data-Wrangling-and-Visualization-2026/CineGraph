@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.API_URL || "http://localhost:5555";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5555";
 
 export async function fetchGraph(nodeId: number) {
   console.log("API URL:", API_URL);
