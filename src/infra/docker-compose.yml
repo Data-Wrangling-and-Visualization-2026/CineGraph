@@ -19,6 +19,8 @@ services:
       - "${FRONT_PORT}:${FRONT_PORT}"
     depends_on:
       - backend
+    env_file:
+      - .env
 
   postgres:
     image: pgvector/pgvector:pg17
