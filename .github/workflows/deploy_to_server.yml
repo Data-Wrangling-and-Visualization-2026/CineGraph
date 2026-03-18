@@ -35,7 +35,7 @@ jobs:
             TARGET_FILE="${TARGET_DIR}/init.db"
 
             echo "Downloading init.db from Google Drive..."
-            gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_INIT_DB_ID }}" \
+            ~/.local/bin/gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_INIT_DB_ID }}" \
               -O "${TARGET_FILE}" --force
             echo "Download complete."
 
