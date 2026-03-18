@@ -11,7 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[f"http://localhost:{os.environ['FRONT_PORT']}"],
+    # allow_origins=[f"http://localhost:{os.environ['FRONT_PORT']}"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

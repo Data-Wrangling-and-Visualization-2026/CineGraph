@@ -1,6 +1,8 @@
 const API_URL = import.meta.env.API_URL || "http://localhost:5555";
 
 export async function fetchGraph(nodeId: number) {
+  console.log("API URL:", API_URL);
+
   const res = await fetch(`${API_URL}/graph?node=${nodeId}`);
 
   if (!res.ok) {
