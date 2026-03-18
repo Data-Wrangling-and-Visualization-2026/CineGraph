@@ -20,9 +20,15 @@ jobs:
             git checkout deploy
             git pull origin deploy
 
-            # This is used to download the init.sql
+            # Ensure pipx exists
+            if ! command -v pipx &> /dev/null; then
+              sudo apt update
+              sudo apt install -y pipx
+            fi
+
+            # Ensure gdown installed
             if ! command -v gdown &> /dev/null; then
-              pip install gdown
+              pipx install gdown
             fi
 
             TARGET_DIR="src/backend/services/db_service"
