@@ -1,0 +1,12 @@
+data/
+emotion_analysis/embeddings/
+emotion_analysis/weights/
+preprocessing/ready_data/
+experiments/
+
+.env
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.venv/

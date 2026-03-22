@@ -1,8 +1,9 @@
 from db.models.embedding import Embedding
 from db.models.graph import Graph
 from db.models.movie import Movie
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy_utils import Ltree
 
 
@@ -109,13 +110,15 @@ class GraphRepository:
         if node is None:
             raise RuntimeError(f'No node with id {node_id}')
 
+        # Convert Ltree to string for serialization
+        if hasattr(node, 'path') and not isinstance(node.path, str):
+            node.path = str(node.path)
+
         # .*{1} selects all the 1 lvl depth children
         query_path = str(node.path) + '.*{1}'
 
         result = await self.session.execute(
-            select(Graph).where(
-                Graph.path.lquery(Ltree(query_path))
-            )
+            select(Graph).where(text("path ~ :pattern")).params(pattern=query_path)
         )
         children = result.scalars().all()
 
@@ -175,3 +178,22 @@ class GraphRepository:
         await self.session.refresh(movie)
 
         return movie
+
+
+    async def get_movie(self, movie_id: int) -> Movie | None:
+        """
+        Get movie's data and embeddings
+
+        Args:
+            movie_id (int): id
+
+        Returns:
+            Movie | None: movie with embeddings
+        """
+        query = (
+            select(Movie)
+            .options(selectinload(Movie.embeddings))
+            .where(Movie.id == movie_id)
+        )
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()

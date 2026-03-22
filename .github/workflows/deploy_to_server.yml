@@ -1,0 +1,47 @@
+on:
+  push:
+    branches:
+      - deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd CineGraph
+
+            git checkout deploy
+            git pull origin deploy
+
+            # Ensure pipx exists
+            if ! command -v pipx &> /dev/null; then
+              sudo apt update
+              sudo apt install -y pipx
+            fi
+
+            # Ensure gdown installed
+            if ! command -v gdown &> /dev/null; then
+              pipx install gdown
+            fi
+
+            TARGET_DIR="src/backend/services/db_service"
+            TARGET_FILE="${TARGET_DIR}/init.sql"
+
+            echo "Downloading init.db from Google Drive..."
+            ~/.local/bin/gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_INIT_DB_ID }}" \
+              -O "${TARGET_FILE}"
+            echo "Download complete."
+
+            cd src/infra
+
+            # Rebuild and restart the Docker containers in the background
+            docker compose up -d --build
+
+            docker image prune -f
