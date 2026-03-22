@@ -162,6 +162,7 @@ Ensure you have the following installed on your machine:
    DB_URL="postgresql+asyncpg://{user}:{password}@{host}:{port}/movies"
 
    API_PORT=5555
+   FRONT_PORT=5173
    ```
 
 3. Spin up the infrastructure and application using Docker Compose:
@@ -176,6 +177,13 @@ Ensure you have the following installed on your machine:
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    pip install -r requirements_full.txt
    ```
+
+    For the frontend:
+    ```sh
+    cd src/frontend
+    npm install
+    npm run dev
+    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
