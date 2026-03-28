@@ -1,12 +1,15 @@
 import os
 
-from api.base_models import MovieResponse, NodeWithChildren
+from api.base_models import MovieResponse, NodeWithChildren, MovieSubmission
 from db.repositories.graph_repo import GraphRepository
 from db.session import get_db
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from api.validation import validate_movie
+import uuid
+import json
 
 app = FastAPI()
 app.add_middleware(
@@ -72,3 +75,40 @@ async def get_movie(
         raise HTTPException(status_code=404, detail="Movie not found")
 
     return MovieResponse.model_validate(movie)
+
+
+@app.post("/add_movie")
+async def add_movie(movie_in: MovieSubmission):
+    """
+    Accepts movie data and subtitles, validates them, and saves to a directory
+    for future user validation.
+    """
+    try:
+        validate_movie(movie_in)
+
+        movie_data = movie_in.model_dump()
+
+        # Generate a unique filename to prevent overwriting
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+        file_name = f"{uuid.uuid4()}.json"
+        dir_path = os.path.join(BASE_DIR, "for_user_validation")
+
+        os.makedirs(dir_path, exist_ok=True)
+
+        file_path = os.path.join(dir_path, file_name)
+
+        # Save to directory
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(movie_data, f, indent=4, ensure_ascii=False)
+
+        return {
+            "status": "success",
+            "message": "Movie saved for user validation.",
+            "file_id": file_name
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

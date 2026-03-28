@@ -13,6 +13,10 @@ class MovieBase(BaseModel):
 class MovieCreate(MovieBase):
     pass
 
+
+class MovieSubmission(MovieCreate):
+    subtitles: str
+
 class MovieResponse(MovieBase):
     id: int
     graph_id: int
