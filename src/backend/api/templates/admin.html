@@ -1,48 +1,179 @@
+<!DOCTYPE html>
 <html>
-<head><title>Admin Panel</title></head>
+<head>
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f5f7fa;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 16px;
+            font-size: 20px;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        .sidebar {
+            width: 30%;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            background: #fff;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .movie {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .movie:hover {
+            background: #f0f0f0;
+        }
+
+        .actions {
+            margin-top: 10px;
+        }
+
+        button {
+            margin-right: 8px;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .approve {
+            background: #10b981;
+            color: white;
+        }
+
+        .reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        .view {
+            background: #3b82f6;
+            color: white;
+        }
+
+        pre {
+            background: #111;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+
+        .loading {
+            color: gray;
+        }
+    </style>
+</head>
 <body>
-    <h1>Pending Movies</h1>
-    <ul id="movies"></ul>
 
-    <script>
-    async function loadMovies() {
-        const res = await fetch('/admin/movies');
-        const movies = await res.json();
+<header>🎬 Admin Panel — Pending Movies</header>
 
-        const list = document.getElementById('movies');
-        list.innerHTML = '';
+<div class="container">
+    <div class="sidebar">
+        <ul id="movies"></ul>
+    </div>
 
-        movies.forEach(name => {
-            const li = document.createElement('li');
+    <div class="content">
+        <h2 id="title">Select a movie</h2>
+        <div id="actions"></div>
+        <pre id="viewer">No movie selected</pre>
+    </div>
+</div>
 
-            li.innerHTML = `
-                ${name}
-                <button onclick="view('${name}')">View</button>
-                <button onclick="approve('${name}')">Approve</button>
-                <button onclick="reject('${name}')">Reject</button>
-            `;
+<script>
+let currentMovie = null;
 
-            list.appendChild(li);
-        });
-    }
+async function loadMovies() {
+    const res = await fetch('/admin/movies');
+    const movies = await res.json();
 
-    async function view(name) {
-        const res = await fetch(`/admin/movies/${name}`);
-        const data = await res.json();
-        alert(JSON.stringify(data, null, 2));
-    }
+    const list = document.getElementById('movies');
+    list.innerHTML = '';
 
-    async function approve(name) {
-        await fetch(`/admin/movies/${name}/approve`, { method: 'POST' });
-        loadMovies();
-    }
+    movies.forEach(name => {
+        const li = document.createElement('li');
+        li.className = 'movie';
+        li.innerText = name;
 
-    async function reject(name) {
-        await fetch(`/admin/movies/${name}`, { method: 'DELETE' });
-        loadMovies();
-    }
+        li.onclick = () => view(name);
 
+        list.appendChild(li);
+    });
+}
+
+async function view(name) {
+    currentMovie = name;
+
+    document.getElementById('title').innerText = name;
+    document.getElementById('viewer').innerText = 'Loading...';
+
+    const res = await fetch(`/admin/movies/${name}`);
+    const data = await res.json();
+
+    document.getElementById('viewer').innerText =
+        JSON.stringify(data, null, 2);
+
+    renderActions(name);
+}
+
+function renderActions(name) {
+    const actions = document.getElementById('actions');
+
+    actions.innerHTML = `
+        <div class="actions">
+            <button class="approve" onclick="approve('${name}')">✅ Approve</button>
+            <button class="reject" onclick="reject('${name}')">❌ Reject</button>
+        </div>
+    `;
+}
+
+async function approve(name) {
+    if (!confirm("Approve this movie?")) return;
+
+    await fetch(`/admin/movies/${name}/approve`, { method: 'POST' });
+
+    resetView();
     loadMovies();
-    </script>
+}
+
+async function reject(name) {
+    if (!confirm("Delete this movie?")) return;
+
+    await fetch(`/admin/movies/${name}`, { method: 'DELETE' });
+
+    resetView();
+    loadMovies();
+}
+
+function resetView() {
+    document.getElementById('title').innerText = 'Select a movie';
+    document.getElementById('viewer').innerText = 'No movie selected';
+    document.getElementById('actions').innerHTML = '';
+}
+
+loadMovies();
+</script>
+
 </body>
 </html>
