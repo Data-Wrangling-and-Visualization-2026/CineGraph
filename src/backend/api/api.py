@@ -1,17 +1,35 @@
 import os
+from contextlib import asynccontextmanager
 
-from api.base_models import MovieResponse, NodeWithChildren, MovieSubmission
+from api.admin_panel import router
+from api.base_models import MovieResponse, MovieSubmission, NodeWithChildren
 from db.repositories.graph_repo import GraphRepository
 from db.session import get_db
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from services.movie_service import place_into_verification_queue, validate_movie
+from settings import settings
 from sqlalchemy.ext.asyncio import AsyncSession
-from api.validation import validate_movie
-import uuid
-import json
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Run only once, on app startup. Ensures ./movies_for_validation exists
+
+    Args:
+        app (FastAPI): app
+    """
+    os.makedirs(
+        settings.movie_validator.path_to_files,
+        exist_ok=True
+    )
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(router)
 app.add_middleware(
     CORSMiddleware,
     # allow_origins=[f"http://localhost:{os.environ['FRONT_PORT']}"],
@@ -88,24 +106,11 @@ async def add_movie(movie_in: MovieSubmission):
 
         movie_data = movie_in.model_dump()
 
-        # Generate a unique filename to prevent overwriting
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-        file_name = f"{uuid.uuid4()}.json"
-        dir_path = os.path.join(BASE_DIR, "for_user_validation")
-
-        os.makedirs(dir_path, exist_ok=True)
-
-        file_path = os.path.join(dir_path, file_name)
-
-        # Save to directory
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(movie_data, f, indent=4, ensure_ascii=False)
+        await place_into_verification_queue(movie_data)
 
         return {
             "status": "success",
             "message": "Movie saved for user validation.",
-            "file_id": file_name
         }
 
     except ValueError as e:

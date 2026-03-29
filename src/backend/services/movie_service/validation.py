@@ -1,5 +1,6 @@
 from api.base_models import MovieSubmission
 
+
 def validate_movie(movie: MovieSubmission) -> bool:
     """
     Basic validation check for the submitted movie.

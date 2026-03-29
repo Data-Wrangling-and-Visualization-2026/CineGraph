@@ -1,0 +1,48 @@
+<html>
+<head><title>Admin Panel</title></head>
+<body>
+    <h1>Pending Movies</h1>
+    <ul id="movies"></ul>
+
+    <script>
+    async function loadMovies() {
+        const res = await fetch('/admin/movies');
+        const movies = await res.json();
+
+        const list = document.getElementById('movies');
+        list.innerHTML = '';
+
+        movies.forEach(name => {
+            const li = document.createElement('li');
+
+            li.innerHTML = `
+                ${name}
+                <button onclick="view('${name}')">View</button>
+                <button onclick="approve('${name}')">Approve</button>
+                <button onclick="reject('${name}')">Reject</button>
+            `;
+
+            list.appendChild(li);
+        });
+    }
+
+    async function view(name) {
+        const res = await fetch(`/admin/movies/${name}`);
+        const data = await res.json();
+        alert(JSON.stringify(data, null, 2));
+    }
+
+    async function approve(name) {
+        await fetch(`/admin/movies/${name}/approve`, { method: 'POST' });
+        loadMovies();
+    }
+
+    async function reject(name) {
+        await fetch(`/admin/movies/${name}`, { method: 'DELETE' });
+        loadMovies();
+    }
+
+    loadMovies();
+    </script>
+</body>
+</html>

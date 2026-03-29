@@ -18,7 +18,7 @@ class GraphRepository:
         self.session = session
 
 
-    async def create_root(self) -> Graph:
+    async def create_root(self, centroid: list[float]) -> Graph:
         """
         Creates root node
 
@@ -41,6 +41,7 @@ class GraphRepository:
             name='All movies',
             path=Ltree('root'),
             type='node',
+            centroid=centroid
         )
 
         self.session.add(root)
@@ -50,7 +51,7 @@ class GraphRepository:
         return root
 
 
-    async def add_child(self, parent_id: int, name: str) -> Graph:
+    async def add_child(self, parent_id: int, name: str, centroid: list[float]) -> Graph:
         """
         Adds node to graph
 
@@ -73,6 +74,7 @@ class GraphRepository:
             name=name,
             type='node',
             path=Ltree('tmp'),
+            centroid=centroid
         )
 
         self.session.add(child)
@@ -197,3 +199,14 @@ class GraphRepository:
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
+
+
+    async def get_all_nodes(self) -> list[Graph]:
+        """
+        Select all the nodes in the graph
+
+        Returns:
+            list[Graph]: nodes
+        """
+        result = await self.session.execute(select(Graph))
+        return result.scalars().all()

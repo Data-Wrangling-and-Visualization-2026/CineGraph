@@ -157,11 +157,29 @@ class APISettings(BaseModel):
     )
 
 
+class MoviesValidatorSettings(BaseModel):
+    path_to_files: str = Field(
+        default='./movies_for_validation'
+    )
+
+
+class AdminPanelSettings(BaseModel):
+    login: str = Field(
+        default=os.environ['ADMIN_LOGIN']
+    )
+
+    password: str = Field(
+        default=os.environ['ADMIN_PASSWORD']
+    )
+
+
 class Settings(BaseModel):
     scraper: ScraperSettings = ScraperSettings()
     emotion_analyzer: EmotionAnalyzerSettings = EmotionAnalyzerSettings()
     preprocessor: PreprocessorSettings = PreprocessorSettings()
     name_creator: NameCreatorSettings = NameCreatorSettings()
+    movie_validator: MoviesValidatorSettings = MoviesValidatorSettings()
+    admin: AdminPanelSettings = AdminPanelSettings()
     db: DBSettings = DBSettings()
     graph: GraphSettings = GraphSettings()
     api: APISettings = APISettings()

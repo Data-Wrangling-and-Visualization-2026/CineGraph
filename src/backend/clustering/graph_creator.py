@@ -366,7 +366,11 @@ class GraphCreator:
         # Dump into db
         for idx, child in enumerate(children):
             node_name = names[idx]
-            child_node = await self.repo.add_child(parent_db_node.id, node_name)
+            child_node = await self.repo.add_child(
+                parent_id=parent_db_node.id,
+                name=node_name,
+                centroid=child_centroids[idx]
+            )
 
             print('=>' * indent, node_name, child['count'])
 
@@ -388,5 +392,5 @@ class GraphCreator:
             tree = self._build_hierarchy()
             root_centroid = self.scaled_features.mean(axis=0)
 
-            root = await self.repo.create_root()
+            root = await self.repo.create_root(centroid=root_centroid)
             await self._populate_db_from_tree(tree, root, root_centroid)

@@ -1,26 +1,27 @@
 services:
-  backend:
-    build: ../backend
-    container_name: backend
-    volumes:
-      - ../backend/data:/app/data
-      - ../backend/emotion_analysis/embeddings:/app/emotion_analysis/embeddings
-      - ../backend/preprocessing/ready_data:/app/preprocessing/ready_data
-      - ../backend/emotion_analysis/weights:/app/emotion_analysis/weights
-    env_file:
-      - .env
-    ports:
-      - "${API_PORT}:${API_PORT}"
+  # backend:
+  #   build: ../backend
+  #   container_name: backend
+  #   volumes:
+  #     - ../backend/data:/app/data
+  #     - ../backend/emotion_analysis/embeddings:/app/emotion_analysis/embeddings
+  #     - ../backend/preprocessing/ready_data:/app/preprocessing/ready_data
+  #     - ../backend/emotion_analysis/weights:/app/emotion_analysis/weights
+  #     - ../backend/movies_for_validation:/app/movies_for_validation
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - "${API_PORT}:${API_PORT}"
 
-  frontend:
-    build: ../frontend
-    container_name: frontend
-    ports:
-      - "${FRONT_PORT}:${FRONT_PORT}"
-    depends_on:
-      - backend
-    env_file:
-      - .env
+  # frontend:
+  #   build: ../frontend
+  #   container_name: frontend
+  #   ports:
+  #     - "${FRONT_PORT}:${FRONT_PORT}"
+  #   depends_on:
+  #     - backend
+  #   env_file:
+  #     - .env
 
   postgres:
     image: pgvector/pgvector:pg17
