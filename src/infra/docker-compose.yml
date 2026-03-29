@@ -7,6 +7,7 @@ services:
       - ../backend/emotion_analysis/embeddings:/app/emotion_analysis/embeddings
       - ../backend/preprocessing/ready_data:/app/preprocessing/ready_data
       - ../backend/emotion_analysis/weights:/app/emotion_analysis/weights
+      - ../backend/generated_sql:/app/generated_sql
     env_file:
       - .env
     ports:
