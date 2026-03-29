@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 import uuid
 from typing import Any
@@ -12,10 +13,18 @@ from db.repositories.graph_repo import GraphRepository
 from db.session import get_db
 from settings import settings
 
+logger = logging.getLogger(__name__)
+
+
 HF_URL = os.environ['HF_API_URL']
 emotions = ['sadness', 'joy', 'love', 'anger', 'fear', 'surprise']
 
 def construct_embedding(embeddings: pd.DataFrame) -> np.ndarray[float]:
+
+    if embeddings.shape[0] < 3:
+        logger.info('Accepted embeddings has less than 3 windows -> ' \
+        'placing zeros instead of NaNs')
+
     acts = np.array_split(embeddings[emotions].values, 3)
 
     data = [
@@ -26,7 +35,10 @@ def construct_embedding(embeddings: pd.DataFrame) -> np.ndarray[float]:
         embeddings[emotions].std(axis=0).values
     )
 
-    return np.concat(data)
+    centroid = np.concat(data)
+    centroid[np.isnan(centroid)] = 0.0
+
+    return centroid
 
 
 async def attach_to_best_parent_node(movie_metadata: dict[Any, str], embeddings: pd.DataFrame) -> None:
@@ -56,7 +68,7 @@ async def attach_to_best_parent_node(movie_metadata: dict[Any, str], embeddings:
             vectors=embeddings[emotions].values
         )
 
-        print(movie.id)
+        # print(movie.id)
 
 
 async def place_into_verification_queue(movie: dict[str, Any]) -> None:
