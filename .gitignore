@@ -255,3 +255,4 @@ dist-ssr
 
 # DB Bump
 init.sql
+init2.sql

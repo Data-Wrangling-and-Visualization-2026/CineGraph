@@ -80,7 +80,7 @@ async def main():
         f"total_elapsed={total_elapsed:.2f}s"
     )
 
-    output_path = "/app/generated_sql/02_update_movies_metadata.sql"
+    output_path = "/app/generated_sql/init2.sql"
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("-- Auto-generated metadata update script\n")
         f.write("BEGIN;\n\n")
