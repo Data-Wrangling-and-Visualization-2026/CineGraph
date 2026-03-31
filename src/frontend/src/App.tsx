@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar/Sidebar';
 import { fetchGraph } from './api/graph';
 import { transformGraphData } from './utils/transform';
 import type { MyNode, GraphData } from './types/graph';
+import './App.css';
 
 export default function App() {
   const [selectedNode, setSelectedNode] = useState<MyNode | null>(null);
@@ -118,9 +119,9 @@ export default function App() {
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', background: '#0f0f11' }}>
+    <div className='div-primary'>
 
-      {activeCategory && (
+      {/* {activeCategory && (
         <button
           onClick={handleGoBack}
           style={{
@@ -140,7 +141,7 @@ export default function App() {
         >
           ← Назад к категориям
         </button>
-      )}
+      )} */}
 
       <Graph
         data={visibleData}
