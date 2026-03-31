@@ -1,83 +1,66 @@
-import wikipedia
+import requests
 import json
-import re
-from bs4 import BeautifulSoup
+import os
+from dotenv import load_dotenv
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(current_dir, '..', '.env')
 
-def clean_wiki_text(text):
-    """
-    Final cleanup: handles currency symbols, spacing,
-    and parentheses formatting.
-    """
-    if not text:
-        return None
+load_dotenv(env_path)
 
-    # Remove citations [1], [a], etc.
-    text = re.sub(r'\[.*?\]', '', text)
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
-    # Normalize dashes and non-breaking spaces
-    text = text.replace('\xa0', ' ').replace('\u2013', '-').replace('\u2014', '-')
-
-    # Fix spacing inside parentheses: "( $ 10 )" -> "($10)"
-    text = re.sub(r'\(\s+', '(', text)
-    text = re.sub(r'\s+\)', ')', text)
-    text = re.sub(r'\$\s+', '$', text)
-
-    # Collapse multiple commas and surrounding whitespace
-    text = re.sub(r'\s*,\s*', ', ', text)
-    text = re.sub(r'(,\s*)+', ', ', text)
-
-    # Collapse all whitespace into single spaces
-    text = re.sub(r'\s+', ' ', text)
-
-    return text.strip().strip(',').strip()
+if not TMDB_API_KEY:
+    raise ValueError("TMDB_API_KEY is not set. Please check your .env file.")
 
 
 def get_film_metadata(film_name):
+    # TMDB API Base URLs
+    search_url = "https://api.themoviedb.org/3/search/movie"
+    details_url = "https://api.themoviedb.org/3/movie/"
+
     try:
-        search_results = wikipedia.search(f"{film_name} film")
-        if not search_results:
-            return {"error": "No results"}
-
-        page = wikipedia.page(search_results[0], auto_suggest=False)
-        soup = BeautifulSoup(page.html(), 'html.parser')
-        infobox = soup.find('table', {'class': re.compile(r'infobox.*vevent|infobox')})
-
-        metadata = {
-            "Title": page.title,
-            "Director": None, "Country": None, "Running time": None,
-            "Budget": None, "Box office": None
+        # Search for the movie to get its TMDB ID
+        search_params = {
+            "api_key": TMDB_API_KEY,
+            "query": film_name
         }
+        search_response = requests.get(search_url, params=search_params)
+        search_response.raise_for_status()
+        search_data = search_response.json()
 
-        if infobox:
-            for row in infobox.find_all('tr'):
-                th = row.find('th')
-                td = row.find('td')
-                if th and td:
-                    label = th.get_text(" ", strip=True).lower()
+        # Check if we got any results
+        if not search_data.get("results"):
+            return {"error": f"No results found for '{film_name}'"}
 
-                    # Target specific tags for replacement to avoid merging words
-                    # but only if they act as block elements.
-                    for tag in td.find_all(['br', 'p', 'li']):
-                        tag.insert_after(', ')
+        # Extract the ID of the first (most relevant) search result
+        movie_id = search_data["results"][0]["id"]
 
-                    value = td.get_text(" ", strip=True)
+        # Fetch the top-level details using the movie ID
+        details_response = requests.get(
+            f"{details_url}{movie_id}",
+            params={"api_key": TMDB_API_KEY}
+        )
+        details_response.raise_for_status()
+        details_data = details_response.json()
 
-                    if "directed by" in label:
-                        metadata["Director"] = clean_wiki_text(value)
-                    elif "country" in label or "countries" in label:
-                        metadata["Country"] = clean_wiki_text(value)
-                    elif "running time" in label:
-                        metadata["Running time"] = clean_wiki_text(value)
-                    elif "budget" in label:
-                        metadata["Budget"] = clean_wiki_text(value)
-                    elif "box office" in label:
-                        metadata["Box office"] = clean_wiki_text(value)
+        # Filter the response to only include your desired fields
+        desired_fields = [
+            "budget", "genres", "origin_country", "original_language",
+            "original_title", "popularity", "production_companies",
+            "production_countries", "release_date", "revenue",
+            "runtime", "spoken_languages", "status", "tagline",
+            "title", "vote_average", "vote_count"
+        ]
 
+        # Build the final dictionary
+        metadata = {field: details_data.get(field) for field in desired_fields}
         return metadata
 
+    except requests.exceptions.RequestException as e:
+        return {"error": f"API Request failed: {str(e)}"}
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": f"An unexpected error occurred: {str(e)}"}
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from db.session import get_db
 from metadata_parsing import get_film_metadata
 
 
-async def main():
+async def update():
     updates = []
     processed = 0
     skipped = 0
@@ -18,7 +18,7 @@ async def main():
 
     # Process 20 films concurrently. You can tweak this,
     # but setting it too high might trigger Wikipedia rate limits.
-    BATCH_SIZE = 20
+    BATCH_SIZE = 1
 
     async for session in get_db():
         graph = GraphRepository(session)
@@ -90,4 +90,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(update())
