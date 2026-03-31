@@ -18,7 +18,7 @@ async def update():
 
     # Process 20 films concurrently. You can tweak this,
     # but setting it too high might trigger Wikipedia rate limits.
-    BATCH_SIZE = 1
+    BATCH_SIZE = 20
 
     async for session in get_db():
         graph = GraphRepository(session)
