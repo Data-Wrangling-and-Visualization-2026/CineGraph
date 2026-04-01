@@ -35,7 +35,7 @@ services:
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../backend/services/db_service/db_init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../backend/services/db_service/init.sql:/docker-entrypoint-initdb.d/init.sql
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
