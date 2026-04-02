@@ -32,11 +32,17 @@ jobs:
             fi
 
             TARGET_DIR="src/backend/services/db_service"
-            TARGET_FILE="${TARGET_DIR}/init.sql"
+            TARGET_FILE1="${TARGET_DIR}/init.sql"
+            TARGET_FILE2="${TARGET_DIR/init2.sql}"
 
             echo "Downloading init.db from Google Drive..."
             ~/.local/bin/gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_INIT_DB_ID }}" \
-              -O "${TARGET_FILE}"
+              -O "${TARGET_FILE1}"
+            echo "Download complete."
+
+            echo "Downloading init2.db from Google Drive..."
+            ~/.local/bin/gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_INIT2_DB_ID }}" \
+              -O "${TARGET_FILE2}"
             echo "Download complete."
 
             cd src/infra
