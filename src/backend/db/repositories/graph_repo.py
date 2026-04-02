@@ -126,7 +126,9 @@ class GraphRepository:
 
         # Check for movies in this node
         result = await self.session.execute(
-            select(Movie).where(Movie.graph_id == node_id)
+            select(Movie)
+            .options(selectinload(Movie.embeddings))
+            .where(Movie.graph_id == node_id)
         )
         movies = result.scalars().all()
 

@@ -13,6 +13,13 @@ class MovieBase(BaseModel):
 class MovieCreate(MovieBase):
     pass
 
+class EmbeddingResponse(BaseModel):
+    window_id: int
+    embedding: List[float]
+
+    class Config:
+        from_attributes = True
+
 
 class MovieSubmission(MovieCreate):
     subtitles: str
@@ -21,6 +28,7 @@ class MovieResponse(MovieBase):
     id: int
     graph_id: int
     title: str
+    embeddings: List[EmbeddingResponse]
 
     class Config:
         from_attributes = True
