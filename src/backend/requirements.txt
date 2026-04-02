@@ -1,5 +1,8 @@
 fastapi==0.129.0
 uvicorn[standard]==0.41.0
+Jinja2==3.1.6
+
+aiofiles==25.1.0
 
 SQLAlchemy==2.0.46
 asyncpg==0.31.0
@@ -19,3 +22,9 @@ greenlet==3.3.1
 
 python-multipart==0.0.22
 orjson==3.11.7
+
+wikipedia==1.4.0
+beautifulsoup4==4.14.3
+
+httpx==0.28.1
+httpx-sse==0.4.3

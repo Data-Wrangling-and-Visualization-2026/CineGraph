@@ -18,7 +18,7 @@ class GraphRepository:
         self.session = session
 
 
-    async def create_root(self) -> Graph:
+    async def create_root(self, centroid: list[float]) -> Graph:
         """
         Creates root node
 
@@ -41,6 +41,7 @@ class GraphRepository:
             name='All movies',
             path=Ltree('root'),
             type='node',
+            centroid=centroid
         )
 
         self.session.add(root)
@@ -50,7 +51,7 @@ class GraphRepository:
         return root
 
 
-    async def add_child(self, parent_id: int, name: str) -> Graph:
+    async def add_child(self, parent_id: int, name: str, centroid: list[float]) -> Graph:
         """
         Adds node to graph
 
@@ -73,6 +74,7 @@ class GraphRepository:
             name=name,
             type='node',
             path=Ltree('tmp'),
+            centroid=centroid
         )
 
         self.session.add(child)
@@ -124,7 +126,9 @@ class GraphRepository:
 
         # Check for movies in this node
         result = await self.session.execute(
-            select(Movie).where(Movie.graph_id == node_id)
+            select(Movie)
+            .options(selectinload(Movie.embeddings))
+            .where(Movie.graph_id == node_id)
         )
         movies = result.scalars().all()
 
@@ -141,7 +145,7 @@ class GraphRepository:
         title: str,
         year: int,
         vectors: list[list[float]],
-    ) -> Movie:
+    ) -> Movie | None:
         """
         Adds movie to the node
 
@@ -156,7 +160,7 @@ class GraphRepository:
         """
         movie = Movie(
             graph_id=graph_id,
-            title=title,
+            title=title[:100],
             year=year,
         )
 
@@ -197,3 +201,19 @@ class GraphRepository:
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
+
+
+    async def get_all_nodes(self) -> list[Graph]:
+        """
+        Select all the nodes in the graph
+
+        Returns:
+            list[Graph]: nodes
+        """
+        result = await self.session.execute(select(Graph))
+        return result.scalars().all()
+
+    async def get_all_movies(self) -> list[Movie]:
+        query = select(Movie).order_by(Movie.id)
+        result = await self.session.execute(query)
+        return result.scalars().all()

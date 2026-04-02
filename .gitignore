@@ -255,3 +255,7 @@ dist-ssr
 
 # DB Bump
 init.sql
+init2.sql
+
+# Waiting validation
+movies_for_validation/

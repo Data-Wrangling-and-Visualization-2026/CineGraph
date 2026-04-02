@@ -1,17 +1,38 @@
 import os
+from contextlib import asynccontextmanager
 
-from api.base_models import MovieResponse, NodeWithChildren
+from api.admin_panel import router
+from api.base_models import MovieResponse, MovieSubmission, NodeWithChildren
 from db.repositories.graph_repo import GraphRepository
 from db.session import get_db
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from services.movie_service import place_into_verification_queue, validate_movie
+from settings import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Run only once, on app startup. Ensures ./movies_for_validation exists
+
+    Args:
+        app (FastAPI): app
+    """
+    os.makedirs(
+        settings.movie_validator.path_to_files,
+        exist_ok=True
+    )
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(router)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[f"http://localhost:{os.environ['FRONT_PORT']}", f"http://localhost:7860"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -71,3 +92,27 @@ async def get_movie(
         raise HTTPException(status_code=404, detail="Movie not found")
 
     return MovieResponse.model_validate(movie)
+
+
+@app.post("/add_movie")
+async def add_movie(movie_in: MovieSubmission):
+    """
+    Accepts movie data and subtitles, validates them, and saves to a directory
+    for future user validation.
+    """
+    try:
+        validate_movie(movie_in)
+
+        movie_data = movie_in.model_dump()
+
+        await place_into_verification_queue(movie_data)
+
+        return {
+            "status": "success",
+            "message": "Movie saved for user validation.",
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

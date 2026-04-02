@@ -20,6 +20,10 @@ class EmbeddingResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+class MovieSubmission(MovieCreate):
+    subtitles: str
+
 class MovieResponse(MovieBase):
     id: int
     graph_id: int

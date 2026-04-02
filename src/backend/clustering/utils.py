@@ -38,7 +38,7 @@ def validate_names(names: list[str], expected_length: int) -> bool:
     Validates the created list of names.
     Checks:
         1. the consistency of the length with expected
-        2. maximum name length (max - 4)
+        2. maximum name length (max - 100)
 
     Args:
         names (list[str]): list of names
@@ -51,7 +51,7 @@ def validate_names(names: list[str], expected_length: int) -> bool:
         return False
 
     for name in names:
-        if len(name.split()) > 4:
+        if len(name) > 100:
             return False
 
     return True

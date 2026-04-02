@@ -6,6 +6,7 @@ CREATE TABLE graph (
     path ltree,
     name VARCHAR(100),
     type VARCHAR(10),
+    centroid VECTOR(24),
     children_count INT
 );
 
