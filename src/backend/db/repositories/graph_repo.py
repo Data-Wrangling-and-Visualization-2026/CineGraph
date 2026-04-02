@@ -143,7 +143,7 @@ class GraphRepository:
         title: str,
         year: int,
         vectors: list[list[float]],
-    ) -> Movie:
+    ) -> Movie | None:
         """
         Adds movie to the node
 
@@ -158,7 +158,7 @@ class GraphRepository:
         """
         movie = Movie(
             graph_id=graph_id,
-            title=title,
+            title=title[:100],
             year=year,
         )
 

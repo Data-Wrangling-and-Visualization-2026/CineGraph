@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 class Movie(Base):
     __tablename__ = 'movies'
     id = Column(Integer, autoincrement=True, primary_key=True, unique=True)
-    title = Column(String)
+    title = Column(String(100))
     year = Column(Integer)
     other_data = Column(JSONB)
     graph_id = Column(Integer, ForeignKey('graph.id'))

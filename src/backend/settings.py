@@ -44,7 +44,7 @@ class ScraperSettings(BaseModel):
 
 class EmotionAnalyzerSettings(BaseModel):
     input_path: str = Field(
-        default='./data',
+        default='./preprocessing/ready_data',
         description="Path to preprocessed data"
     )
 
@@ -102,7 +102,7 @@ class DBSettings(BaseModel):
 
 class GraphSettings(BaseModel):
     max_depth: int = Field(
-        default=5,
+        default=10,
         description="Maximum graph depth (excluding the highest node (root))"
     )
 

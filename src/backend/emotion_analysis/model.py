@@ -210,6 +210,6 @@ class EmotionAnalyzer:
         Selects all the files with subtitles and analyzes them
         """
         for filepath in glob.glob(
-            os.path.join(settings.emotion_analyzer.input_path, '*.txt')
+            os.path.join(settings.emotion_analyzer.input_path, '*.csv')
         ):
             self.analyze_file(Path(filepath))

@@ -9,7 +9,7 @@ class Graph(Base):
     __tablename__ = 'graph'
     id = Column(Integer, primary_key=True, autoincrement=True)
     path = Column(LtreeType, nullable=False)
-    name = Column(String)
+    name = Column(String(100))
     type = Column(String)
     centroid = Column(VECTOR)
     children_count = Column(Integer, default=0)

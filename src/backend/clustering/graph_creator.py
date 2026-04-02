@@ -247,8 +247,9 @@ class GraphCreator:
         Returns:
             dict: rebalanced tree
         """
-        if not node.get('children') or depth >= settings.graph.max_depth:
+        if depth >= settings.graph.max_depth or not node.get('children'):
             node['type'] = 'leaf'
+            node['children'] = []
             return node
 
         # Recursively rebalance all the nodes
@@ -277,6 +278,41 @@ class GraphCreator:
                     new_children.append(child)
 
             node['children'] = new_children
+
+        # Should prevent additional leaf nodes with small # of movies
+        absorbed, remaining = [], []
+        for child in node['children']:
+            if child['count'] < settings.graph.min_samples_leaf and len(child['children']) > 1:
+                absorbed.extend(child['indices'])
+            else:
+                remaining.append(child)
+
+        if absorbed and remaining:
+            centroids = [
+                self.scaled_features[
+                    c['indices']
+                ].mean(axis=0) for c in remaining
+            ]
+            for idx in absorbed: # find the best node to attach movie
+                dists = [np.linalg.norm(self.scaled_features[idx] - c) for c in centroids]
+                best = int(np.argmin(dists))
+                remaining[best]['indices'].append(idx)
+                remaining[best]['count'] += 1
+        elif absorbed:
+            node['type'] = 'leaf'
+            node['children'] = []
+            return node
+
+        node['children'] = remaining
+
+        # Should prevent long chains of one node
+        if len(node['children']) == 1 and len(node['indices']) < settings.graph.min_samples_leaf:
+            only = node['children'][0]
+            node['indices'] = only['indices']
+            node['count'] = only['count']
+            node['children'] = only.get('children', [])
+            if not node['children']:
+                node['type'] = 'leaf'
 
         return node
 
@@ -348,7 +384,7 @@ class GraphCreator:
 
             # Select only the closest to parent centroid
             distances = np.linalg.norm(child_vectors - child_centroid, axis=1)
-            closest = np.argsort(distances)[:15]
+            closest = np.argsort(distances)[:5]
 
             selected = [indices[i] for i in closest]
             titles = self.all_movies_emb.iloc[selected]['movie'].values

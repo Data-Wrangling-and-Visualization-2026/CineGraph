@@ -20,19 +20,20 @@ def pipeline() -> None:
     """
     # Imports are placed here to avoid LLMs loading
     from clustering.graph_creator import GraphCreator
-    from emotion_analysis.model import EmotionAnalyzer
-    from preprocessing.preprocessing_agent import PreprocessingAgent
-    from scraping.scraper import Scraper
+    # from emotion_analysis.model import EmotionAnalyzer
+    # from preprocessing.preprocessing_agent import PreprocessingAgent
+    # from scraping.scraper import Scraper
 
 
-    Scraper().start_scraping()
-    PreprocessingAgent().start_preprocessing()
-    EmotionAnalyzer().analyze_data()
+    # Scraper().start_scraping()
+    # PreprocessingAgent().start_preprocessing()
+    # EmotionAnalyzer().analyze_data()
     g = GraphCreator()
     run(g.construct_graph()) # run() is used because construct_graph is async
 
 
 if __name__ == '__main__':
+    pipeline()
     uvicorn.run(
         app=settings.api.app_path,
         host=settings.api.host,

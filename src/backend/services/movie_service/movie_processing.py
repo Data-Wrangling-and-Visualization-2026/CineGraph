@@ -88,19 +88,9 @@ async def place_into_verification_queue(movie: dict[str, Any]) -> None:
 
 async def process_movie(movie: dict[str, Any]) -> None:
     async with httpx.AsyncClient(timeout=120.0) as client:
-        clean_resp = await client.post(
-            f'{HF_URL}/clean',
-            json={'text': movie['subtitles']}
-        )
-
-        if clean_resp.status_code != 200:
-            raise RuntimeError(f'Clean API error: {clean_resp.text}')
-
-        cleaned = clean_resp.json()['text']
-
         analyze_resp = await client.post(
-            f'{HF_URL}/analyze',
-            json={'text': cleaned}
+            f'{HF_URL}/analyze', # server has only one endpoint
+            json={'text': movie['subtitles']}
         )
 
         if analyze_resp.status_code != 200:
