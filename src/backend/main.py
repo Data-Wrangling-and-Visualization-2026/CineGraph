@@ -23,6 +23,7 @@ def pipeline() -> None:
     from emotion_analysis.model import EmotionAnalyzer
     from preprocessing.preprocessing_agent import PreprocessingAgent
     from scraping.scraper import Scraper
+    from scraping.metadata_update import update
 
 
     Scraper().start_scraping()
@@ -30,6 +31,7 @@ def pipeline() -> None:
     EmotionAnalyzer().analyze_data()
     g = GraphCreator()
     run(g.construct_graph()) # run() is used because construct_graph is async
+    run(update())
 
 
 if __name__ == '__main__':

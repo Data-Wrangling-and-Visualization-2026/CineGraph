@@ -210,3 +210,8 @@ class GraphRepository:
         """
         result = await self.session.execute(select(Graph))
         return result.scalars().all()
+
+    async def get_all_movies(self) -> list[Movie]:
+        query = select(Movie).order_by(Movie.id)
+        result = await self.session.execute(query)
+        return result.scalars().all()

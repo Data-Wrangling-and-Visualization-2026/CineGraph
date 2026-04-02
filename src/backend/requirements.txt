@@ -23,5 +23,8 @@ greenlet==3.3.1
 python-multipart==0.0.22
 orjson==3.11.7
 
+wikipedia==1.4.0
+beautifulsoup4==4.14.3
+
 httpx==0.28.1
 httpx-sse==0.4.3
