@@ -255,3 +255,5 @@ dist-ssr
 
 # DB Bump
 init.sql
+
+movies_for_validation/
