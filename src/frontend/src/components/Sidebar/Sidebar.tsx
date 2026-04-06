@@ -7,6 +7,8 @@ import { HexagonChart, type EmbeddingItem } from '../Charts/HexagonChart';
 interface SidebarProps {
   selectedNode: MyNode | null;
   onClose: () => void;
+  onOpenDetails: () => void;
+  isHidden?: boolean;
 }
 
 interface MovieData {
@@ -46,7 +48,7 @@ const formatDate = (dateString: string) => {
   return `${day}.${month}.${year}`;
 };
 
-export function Sidebar({ selectedNode, onClose }: SidebarProps) {
+export function Sidebar({ selectedNode, onClose, onOpenDetails, isHidden }: SidebarProps) {
   const [movieData, setMovieData] = useState<MovieData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -103,13 +105,20 @@ export function Sidebar({ selectedNode, onClose }: SidebarProps) {
                        !isSameName(engTitle, origTitle);
 
   return (
-    <div className={styles.div_sidebar}>
-      <button 
-        onClick={onClose} 
-        style={{ marginBottom: '15px', cursor: 'pointer', padding: '5px 10px' }}
-      >
-        Закрыть
-      </button>
+    <div className={`${styles.div_sidebar} ${isHidden ? styles.hidden : ''}`}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+        <button onClick={onClose} style={{ cursor: 'pointer', padding: '5px 10px' }}>
+          Закрыть
+        </button>
+        
+        {/* Кнопка открытия большой панели */}
+        <button 
+          onClick={onOpenDetails} 
+          style={{ cursor: 'pointer', padding: '5px 10px', background: '#00bfff', color: '#fff', border: 'none', borderRadius: '4px' }}
+        >
+          Анализ
+        </button>
+      </div>
       
       {/* Главное название (Имя узла) */}
       <h2 style={{ marginBottom: '5px' }}>{selectedNode.name}</h2>

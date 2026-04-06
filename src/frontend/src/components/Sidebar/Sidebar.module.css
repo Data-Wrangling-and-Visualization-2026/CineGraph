@@ -1,11 +1,25 @@
 .div_sidebar {
-    
     position: absolute;
     top: 0;
     right: 0;
     width: 300px;
     background: #2e2c2c;
+    color: #fff;
     height: 100vh;
     padding: 20px;
-    boxShadow: -4px 0 15px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+    overflow-y: auto;
+    
+    /* ДОБАВЛЯЕМ АНИМАЦИЮ */
+    transform: translateX(0);
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
+
+/* НОВЫЙ КЛАСС: уводит панель за правый край экрана */
+.hidden {
+    transform: translateX(110%);
+    box-shadow: none; /* Убираем тень, пока она спрятана */
+}
+
+/* (ваш код скроллбара ниже...) */

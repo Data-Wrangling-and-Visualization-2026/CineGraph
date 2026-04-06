@@ -1,0 +1,103 @@
+.panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 66vw;
+  height: 100vh;
+  background: rgba(20, 20, 22, 0.95);
+  backdrop-filter: blur(15px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 40px;
+  box-sizing: border-box;
+  box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+  z-index: 100;
+  overflow-y: auto;
+  
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.panel_open {
+  transform: translateX(0);
+}
+
+.close_button {
+  background: transparent;
+  color: #00bfff;
+  border: 1px solid #00bfff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+
+.close_button:hover {
+  background: rgba(0, 191, 255, 0.1);
+}
+
+/* Лейаут дашборда */
+.dashboard {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.left_column {
+  flex: 1.2; /* Графики займут чуть больше места */
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.right_column {
+  flex: 0.8;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Стили для красивых плашек мета-данных */
+.stats_grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.stat_box {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.stat_label {
+  color: #888;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+
+.stat_value {
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+}
+
+/* Теги жанров */
+.genre_tag {
+  display: inline-block;
+  background: rgba(0, 191, 255, 0.15);
+  color: #00bfff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(0, 191, 255, 0.3);
+}
