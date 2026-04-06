@@ -16,6 +16,7 @@ CREATE INDEX path_idx ON graph USING btree (path);
 CREATE TABLE movies (
     id SERIAL PRIMARY KEY,
     title VARCHAR(100),
+    emotion_arc VECTOR(24),
     year INT,
     other_data JSONB,
     graph_id INT REFERENCES graph(id)

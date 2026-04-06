@@ -58,3 +58,7 @@ class NodeWithChildren(NodeResponse):
     # children_nodes: List[int] = []  # Now accepts list of node IDs
     # Changed from List[MovieResponse] to List[int]
     movies: List[MovieResponse] = []  # Now accepts list of movie IDs
+
+
+class MoviesResponse(BaseModel):
+    movies: List[MovieResponse] = []

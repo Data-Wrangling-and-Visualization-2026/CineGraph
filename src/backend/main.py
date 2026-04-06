@@ -22,8 +22,8 @@ def pipeline() -> None:
     from clustering.graph_creator import GraphCreator
     from emotion_analysis.model import EmotionAnalyzer
     from preprocessing.preprocessing_agent import PreprocessingAgent
-    from scraping.scraper import Scraper
     from scraping.metadata_update import update
+    from scraping.scraper import Scraper
 
 
     Scraper().start_scraping()

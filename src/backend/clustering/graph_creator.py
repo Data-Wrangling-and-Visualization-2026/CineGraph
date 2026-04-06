@@ -331,9 +331,21 @@ class GraphCreator:
         df = pd.read_csv(path)
         embeddings = df[self.emotions].values
 
+        emotion_arc = np.concat(
+            [
+                act.mean(axis=0)
+                for act in np.array_split(
+                    embeddings,
+                    indices_or_sections=3,
+                    axis=0
+                )
+            ] + [embeddings.std(axis=0)],
+        )
+
         return {
-            'title': ''.join(title.split()[:-1]),
+            'title': ' '.join(title.split()[:-1]), # [:-1] removes year
             'year': int(title.split()[-1]),
+            'emotion_arc': emotion_arc,
             'vectors': embeddings
         }
 
