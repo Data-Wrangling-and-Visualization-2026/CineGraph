@@ -115,50 +115,6 @@ class GraphCreator:
         return all_movies_emb
 
 
-    def _construct_emotional_shift(self, child_centroid: np.ndarray, parent_centroid: np.ndarray) -> str:
-        """
-        Selects three dominant emotions:
-            1. Difference between two centroids is calculated_type_
-            2. Two emotions which are higher in child are selected
-            3. One emotion which is higher in parent is selected
-        If all the diffs are too small base string is returned
-
-        Used for better LLM context to produce more diverse names
-
-        Args:
-            child_centroid (ndarray): centroid
-            parent_centroid (ndarray): centroid
-
-        Returns:
-            str: formatted string with emotional shifts description
-        """
-        if parent_centroid is None: # Root node does not have any centroid
-            return 'Baseline Story Shape'
-
-        # For simplicity we exclude standard deviation from consideration
-        deltas = child_centroid - parent_centroid
-        if self.include_std:
-            deltas = deltas[:-len(self.emotions)]
-
-        shifts = []
-
-        sorted_idx = np.argsort(deltas)
-
-        for idx in sorted_idx[-2:]:
-            if deltas[idx] > self.delta_threshold:
-                shifts.append(
-                    f"Higher {self.features[idx].replace('_', ' in ')}"
-                )
-
-        for idx in sorted_idx[:1]:
-            if deltas[idx] < -self.delta_threshold:
-                shifts.append(
-                    f"Lower {self.features[idx].replace('_', ' in ')}"
-                )
-
-        return ', '.join(shifts) if shifts else 'Balanced/Nuanced Pacing'
-
-
     def _build_hierarchy(self) -> dict:
         """
         Creates tree structure based on clusters
@@ -269,7 +225,7 @@ class GraphCreator:
 
                 if child['type'] == 'node':
                     divergence = child.get('distance', 0) / (node.get('distance', 1) + 1e-9)
-                    if divergence > 0.55:
+                    if divergence > 0.65:
                         added = True
                         new_children.extend(child['children'])
                         changed = True
@@ -364,6 +320,74 @@ class GraphCreator:
             await self.repo.add_movie(node.id, **movie_data)
 
 
+    def _split_oversized_leaves(self, node: dict, max_size: int = 150):
+        """
+        Recursively finds leaves with too many movies and splits them using KMeans.
+        """
+        if node['type'] == 'leaf':
+            if node['count'] > max_size:
+                # Calculate how many clusters we need to get sizes roughly around 50-70
+                k = max(2, node['count'] // (max_size // 2))
+
+                vectors = self.scaled_features[node['indices']]
+                kmeans = MiniBatchKMeans(n_clusters=k, batch_size=2048, random_state=42)
+                labels = kmeans.fit_predict(vectors)
+                indices = np.array(node['indices'])
+
+                new_children = []
+                for i in range(k):
+                    # Map the local cluster indices back to the global dataset indices
+                    local_indices = indices[labels == i]
+
+                    child_centroid = self.scaled_features[local_indices].mean(axis=0)
+                    new_children.append({
+                        'type': 'leaf',
+                        'indices': local_indices.tolist(),
+                        'count': len(local_indices),
+                        'centroid': child_centroid,
+                        'children': []
+                    })
+
+                # Transform this leaf into a parent node
+                node['type'] = 'node'
+                node['children'] = new_children
+
+
+        elif node.get('children'):
+            for child in node['children']:
+                self._split_oversized_leaves(child, max_size)
+
+
+    def _assign_names(self, node: dict, depth: int = 0) -> str:
+        children = node.get('children', [])
+        if not children:
+            indices = node['indices']
+
+            node_vectors = self.scaled_features[indices]
+            node_centroid = node_vectors.mean(axis=0)
+
+            # Select only the closest to parent centroid
+            distances = np.linalg.norm(node_vectors - node_centroid, axis=1)
+            closest = np.argsort(distances)[:10]
+
+            selected = [indices[i] for i in closest]
+            titles = self.all_movies_emb.iloc[selected]['movie'].values
+
+            node['name'] = generate_context_aware_node_name(titles, leaf=True)
+            print('\t' * depth + node['name'])
+            return node['name']
+
+        child_names = [self._assign_names(child, depth+1) for child in children]
+
+        if depth == 0:
+            return
+
+        node['name'] = generate_context_aware_node_name(child_names[:10], leaf=False)
+        print('\t' * depth + node['name'])
+
+        return node['name']
+
+
     async def _populate_db_from_tree(self, node, parent_db_node, parent_centroid = None, indent: int = 0) -> None:
         """
         Dumps tree into db
@@ -382,7 +406,6 @@ class GraphCreator:
             )
             return
 
-        groups = []
         child_centroids = []
 
         # Select the most `representative` movies for each group
@@ -394,33 +417,15 @@ class GraphCreator:
             child_centroid = child_vectors.mean(axis=0)
             child_centroids.append(child_centroid)
 
-            # Select only the closest to parent centroid
-            distances = np.linalg.norm(child_vectors - child_centroid, axis=1)
-            closest = np.argsort(distances)[:5]
-
-            selected = [indices[i] for i in closest]
-            titles = self.all_movies_emb.iloc[selected]['movie'].values
-
-            shift = self._construct_emotional_shift(child_centroid, parent_centroid)
-
-            groups.append({
-                'titles': titles,
-                'shift': shift,
-            })
-
-        # Generate names
-        names = generate_context_aware_node_name(parent_db_node.name, groups)
-
         # Dump into db
         for idx, child in enumerate(children):
-            node_name = names[idx]
             child_node = await self.repo.add_child(
                 parent_id=parent_db_node.id,
-                name=node_name,
+                name=child['name'],
                 centroid=child_centroids[idx]
             )
 
-            print('=>' * indent, node_name, child['count'])
+            print('=>' * indent, child['name'], child['count'])
 
             await self._populate_db_from_tree(
                 node=child,
@@ -438,6 +443,10 @@ class GraphCreator:
             self.repo = GraphRepository(db)
 
             tree = self._build_hierarchy()
+            self._split_oversized_leaves(tree, max_size=settings.graph.target_leaf_size)
+
+            self._assign_names(tree, depth=0)
+
             root_centroid = self.scaled_features.mean(axis=0)
 
             root = await self.repo.create_root(centroid=root_centroid)
