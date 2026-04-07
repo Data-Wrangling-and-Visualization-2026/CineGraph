@@ -38,7 +38,7 @@ services:
       - "5432:5432"
 
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_cinegraph:/var/lib/postgresql/data
       - ../backend/services/db_service/init.sql:/docker-entrypoint-initdb.d/01_init.sql
       - ../backend/services/db_service/init2.sql:/docker-entrypoint-initdb.d/02_init2.sql
 
@@ -49,4 +49,4 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
+  postgres_data_cinegraph:

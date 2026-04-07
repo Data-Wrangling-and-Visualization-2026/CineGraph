@@ -1,5 +1,6 @@
 import asyncio
 import os
+from typing import Union
 
 import httpx
 import numpy as np
@@ -23,7 +24,7 @@ Output ONLY the passages, separated by ---
 {}
 """
 
-async def find_matching_movies(embedding: np.ndarray) -> list:
+async def _find_matching_movies(embedding: np.ndarray) -> list:
     async for db in get_db():
         repo = GraphRepository(db)
 
@@ -32,8 +33,8 @@ async def find_matching_movies(embedding: np.ndarray) -> list:
     return movies
 
 
-async def find_best_match(user_request: str) -> list:
-    prompt = template.format(user_request)
+async def _generate_embedding(description: str):
+    prompt = template.format(description)
 
     response = await asyncio.to_thread(
         client.models.generate_content,
@@ -74,7 +75,21 @@ async def find_best_match(user_request: str) -> list:
         ] + [embeddings.std(axis=0)],
     )
 
-    return await find_matching_movies(emotion_arc)
+    return emotion_arc
+
+
+async def find_matching_movies(user_request: Union[str, list[float]]) -> list | None:
+    emotion_arc = None
+
+    if isinstance(user_request, str):
+        emotion_arc = await _generate_embedding(description=user_request)
+    elif isinstance(user_request, list):
+        emotion_arc = user_request
+
+    if not emotion_arc:
+        return None
+
+    return await _find_matching_movies(emotion_arc)
 
 
     # {'data': [{'sadness': 0.9812568426132202, 'joy': 0.00961368065327406, 'love': 0.002246781252324581, 'anger': 0.004471870604902506, 'fear': 0.0021979548037052155, 'surprise': 0.00021283802925609052, 'window_id': 0, 'window_start': 0, 'window_end': 50}]}

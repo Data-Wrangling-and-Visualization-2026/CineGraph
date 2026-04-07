@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 
 # Movie schemas
@@ -53,12 +53,20 @@ class NodeResponse(NodeBase):
 
 
 class NodeWithChildren(NodeResponse):
-    # Changed from List[NodeResponse] to List[int]
     children_nodes: List[NodeResponse] = []
-    # children_nodes: List[int] = []  # Now accepts list of node IDs
-    # Changed from List[MovieResponse] to List[int]
     movies: List[MovieResponse] = []  # Now accepts list of movie IDs
 
 
 class MoviesResponse(BaseModel):
     movies: List[MovieResponse] = []
+
+
+class SearchRequest(BaseModel):
+    description: Union[str, List[float]] = Field(..., description='Either movie emotion description or vector [24]')
+
+    @field_validator('description')
+    def validate_vector(cls, v):
+        if isinstance(v, list):
+            if not all(isinstance(x, (float, int)) for x in v):
+                raise ValueError("Vector must contain only numbers")
+        return v

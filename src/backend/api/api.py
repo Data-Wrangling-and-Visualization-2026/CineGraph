@@ -7,6 +7,7 @@ from api.base_models import (
     MoviesResponse,
     MovieSubmission,
     NodeWithChildren,
+    SearchRequest,
 )
 from db.repositories.graph_repo import GraphRepository
 from db.session import get_db
@@ -14,7 +15,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from services.movie_service import place_into_verification_queue, validate_movie
-from services.search_service import find_best_match
+from services.search_service import find_matching_movies
 from settings import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -124,10 +125,10 @@ async def add_movie(movie_in: MovieSubmission):
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@app.post("/search_by_description", response_model=MoviesResponse)
-async def search_movie_by_description(description: str):
+@app.post("/search_movies", response_model=MoviesResponse)
+async def search_movies(request: SearchRequest):
     try:
-        movies = await find_best_match(description)
+        movies = await find_matching_movies(request.description)
         return MoviesResponse(movies=movies)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
