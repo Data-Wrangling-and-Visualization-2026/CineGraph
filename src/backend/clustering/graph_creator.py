@@ -269,7 +269,7 @@ class GraphCreator:
 
                 if child['type'] == 'node':
                     divergence = child.get('distance', 0) / (node.get('distance', 1) + 1e-9)
-                    if divergence > 0.65:
+                    if divergence > 0.55:
                         added = True
                         new_children.extend(child['children'])
                         changed = True
