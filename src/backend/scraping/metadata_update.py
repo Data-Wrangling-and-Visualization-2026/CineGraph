@@ -45,10 +45,12 @@ async def update():
                 metadata_json = json.dumps(metadata, ensure_ascii=False)
                 escaped_json = metadata_json.replace("'", "''")
 
+                safe_title = movie.title.replace("'", "''")
+
                 updates.append(
                     f"UPDATE public.movies "
                     f"SET other_data = '{escaped_json}'::jsonb "
-                    f"WHERE id = {movie.id};"
+                    f"WHERE title = '{safe_title}';"
                 )
 
                 processed += 1

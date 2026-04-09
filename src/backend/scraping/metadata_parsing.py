@@ -46,7 +46,7 @@ def get_film_metadata(film_name):
 
         # Filter the response to only include your desired fields
         desired_fields = [
-            "budget", "genres", "origin_country", "original_language",
+            "budget", "overview", "belongs_to_collection", "homepage", "tagline", "genres", "origin_country", "original_language",
             "original_title", "popularity", "production_companies",
             "production_countries", "release_date", "revenue",
             "runtime", "spoken_languages", "status", "tagline",
