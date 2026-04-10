@@ -1,0 +1,34 @@
+/* Плашка со статистикой */
+.stat_box {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.stat_label {
+  color: #888;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+
+.stat_value {
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+}
+
+/* Теги жанров */
+.genre_tag {
+  display: inline-block;
+  background: rgba(0, 191, 255, 0.15);
+  color: #00bfff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(0, 191, 255, 0.3);
+}
