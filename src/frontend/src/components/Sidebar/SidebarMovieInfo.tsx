@@ -4,7 +4,7 @@ import { formatCurrency, formatDate } from '../../utils/formatters';
 
 interface SidebarMovieInfoProps {
   movieData: MovieData;
-  origTitle: string | null;
+  origTitle: string | null | undefined;
   engTitle: string | null;
   showOrigTitle: boolean;
   showEngTitle: boolean;
