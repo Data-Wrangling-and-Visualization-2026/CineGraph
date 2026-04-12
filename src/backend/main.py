@@ -1,10 +1,11 @@
+import argparse
 from asyncio import run
 
 import uvicorn
 from settings import settings
 
 
-def pipeline() -> None:
+def run_pipeline() -> None:
     """
     Temporary starts the pipeline:
         1. Scraping -> data is placed into './data/'
@@ -22,8 +23,8 @@ def pipeline() -> None:
     from clustering.graph_creator import GraphCreator
     from emotion_analysis.model import EmotionAnalyzer
     from preprocessing.preprocessing_agent import PreprocessingAgent
-    from scraping.scraper import Scraper
     from scraping.metadata_update import update
+    from scraping.scraper import Scraper
 
 
     Scraper().start_scraping()
@@ -34,10 +35,38 @@ def pipeline() -> None:
     run(update())
 
 
-if __name__ == '__main__':
+def run_server() -> None:
     uvicorn.run(
         app=settings.api.app_path,
         host=settings.api.host,
         port=settings.api.port,
         reload=True
     )
+
+
+def run_graph() -> None:
+    from clustering.graph_creator import GraphCreator
+    g = GraphCreator()
+    run(g.construct_graph())
+
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest='command')
+
+    parser_server = subparsers.add_parser('server')
+    parser_server.set_defaults(func=run_server)
+
+    parser_pipeline = subparsers.add_parser('pipeline')
+    parser_pipeline.set_defaults(func=run_pipeline)
+
+    parser_graph = subparsers.add_parser('graph')
+    parser_graph.set_defaults(func=run_graph)
+
+    args = parser.parse_args()
+
+    if hasattr(args, 'func'):
+        args.func()
+    else:
+        run_server()

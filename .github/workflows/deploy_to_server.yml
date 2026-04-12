@@ -33,7 +33,7 @@ jobs:
 
             TARGET_DIR="src/backend/services/db_service"
             TARGET_FILE1="${TARGET_DIR}/init.sql"
-            TARGET_FILE2="${TARGET_DIR/init2.sql}"
+            TARGET_FILE2="${TARGET_DIR}/init2.sql"
 
             echo "Downloading init.db from Google Drive..."
             ~/.local/bin/gdown "https://drive.google.com/uc?id=${{ secrets.GDRIVE_INIT_DB_ID }}" \

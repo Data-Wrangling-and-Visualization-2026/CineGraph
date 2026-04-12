@@ -38,9 +38,9 @@ services:
       - "5432:5432"
 
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ../backend/services/db_service/init.sql:/docker-entrypoint-initdb.d/01_init.sql
-      - ../backend/services/db_service/init2.sql:/docker-entrypoint-initdb.d/02_init2.sql
+      - postgres_data_cinegraph:/var/lib/postgresql/data
+      - ../backend/services/db_service/db_init.sql:/docker-entrypoint-initdb.d/01_init.sql
+      # - ../backend/services/db_service/init2.sql:/docker-entrypoint-initdb.d/02_init2.sql
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -49,4 +49,4 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
+  postgres_data_cinegraph:

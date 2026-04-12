@@ -11,12 +11,11 @@ import numpy as np
 import pandas as pd
 from db.repositories.graph_repo import GraphRepository
 from db.session import get_db
-from settings import settings
+from settings import HF_URL, settings
 
 logger = logging.getLogger(__name__)
 
 
-HF_URL = os.environ['HF_API_URL']
 emotions = ['sadness', 'joy', 'love', 'anger', 'fear', 'surprise']
 
 def construct_embedding(embeddings: pd.DataFrame) -> np.ndarray[float]:

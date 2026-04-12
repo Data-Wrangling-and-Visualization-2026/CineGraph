@@ -144,6 +144,7 @@ class GraphRepository:
         graph_id: int,
         title: str,
         year: int,
+        emotion_arc: list[float],
         vectors: list[list[float]],
     ) -> Movie | None:
         """
@@ -160,6 +161,7 @@ class GraphRepository:
         """
         movie = Movie(
             graph_id=graph_id,
+            emotion_arc=emotion_arc,
             title=title[:100],
             year=year,
         )
@@ -213,7 +215,21 @@ class GraphRepository:
         result = await self.session.execute(select(Graph))
         return result.scalars().all()
 
+
     async def get_all_movies(self) -> list[Movie]:
         query = select(Movie).order_by(Movie.id)
         result = await self.session.execute(query)
+        return result.scalars().all()
+
+
+    async def find_closest(self, emotion_arc: list[float], top_k: int = 10) -> list[Movie]:
+        stmt = (
+            select(Movie)
+            .options(selectinload(Movie.embeddings))
+            .order_by(Movie.emotion_arc.cosine_distance(emotion_arc))
+            .limit(top_k)
+        )
+
+        result = await self.session.execute(stmt)
+
         return result.scalars().all()

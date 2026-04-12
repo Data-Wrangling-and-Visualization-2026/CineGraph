@@ -1,9 +1,14 @@
+import random
 from multiprocessing import cpu_count
 
 from langchain_community.chat_models import ChatLlamaCpp
 from langchain_core.messages import HumanMessage, SystemMessage
-from pydantic import Field, create_model
+from pydantic import BaseModel, Field
 from settings import settings
+
+
+class CategoryName(BaseModel):
+    name: str = Field(description='A unique 2-4 word descriptive category name. Use Title Case.')
 
 # Base model
 llm = ChatLlamaCpp(
@@ -18,43 +23,15 @@ llm = ChatLlamaCpp(
     repeat_penalty=1.05,
     verbose=False,
 )
+structured_llm = llm.with_structured_output(CategoryName)
 
-system_prompt = """You are an expert in narrative psychology, film taxonomy, and story arcs.
-
-Task:
-You will be given several distinct groups of movies. You MUST generate exactly one unique, evocative sub-category name for EVERY group.
-
+system_prompt = """You are an expert in narrative psychology and film taxonomy.
+Your task is to provide exactly ONE evocative 2-4 word subgenre or theme name.
 Rules:
-1. Focus on the Emotional Shift and the specific Movie Titles to find the narrative vibe.
-2. If multiple groups have similar emotional shifts, use the Movie Titles to find the thematic difference.
-3. Maximum 4 words per name. Use Title Case (e.g., "Tragic Downfalls", "High-Octane Climaxes").
-4. DO NOT use generic terms like "Collection", "Movies", or repeat the parent's exact name.
-5. Every single name you generate must be distinct from the others.
-6. Do NOT summarize the groups into one name. You must name each group individually.
+1. Maximum 4 words. Use Title Case (e.g., "Tragic Downfalls", "Heroic Journeys").
+2. DO NOT use generic words like "Collection", "Movies", "Group", or "Cluster".
+3. Capture the overarching narrative, mood, or structural vibe.
 """
-
-def validate_names(names: list[str], expected_length: int) -> bool:
-    """
-    Validates the created list of names.
-    Checks:
-        1. the consistency of the length with expected
-        2. maximum name length (max - 100)
-
-    Args:
-        names (list[str]): list of names
-        expected_length (int): the desired number of generated names
-
-    Returns:
-        bool: valid/not_valid
-    """
-    if names is None or len(names) != expected_length:
-        return False
-
-    for name in names:
-        if len(name) > 100:
-            return False
-
-    return True
 
 
 def clean_titles(titles: list[str]) -> list[str]:
@@ -73,58 +50,25 @@ def clean_titles(titles: list[str]) -> list[str]:
     ]
 
 
-def generate_context_aware_node_name(parent_name: str, groups: list[dict]) -> list[str]:
-    """
-    Generates the list of names based on the titles, emotion shifts and parent node name
+def generate_context_aware_node_name(movies: list[str], leaf: bool = True) -> list[str]:
 
-    Args:
-        parent_name (str): parent node's name
-        groups (list[dict]): list of groups: {'titles', 'shift'}
+    message = ''
+    if leaf:
+        message = f"Look at the following movie titles. What specific narrative archetype or atmospheric theme \
+            unites them?\n\nMovies: {', '.join(clean_titles(movies))}\n\nReturn ONLY the 2-4 word category name."
+    else:
+        message = f"Look at the following sub-categories. What broader overarching narrative theme encompasses \
+            all of them?\n\nSub-categories: {', '.join(movies)}\n\nReturn ONLY the 2-4 word category name."
 
-    Returns:
-        list[str]: generated names
-    """
-    num_groups = len(groups)
+    messages = [SystemMessage(content=system_prompt), HumanMessage(content=message)]
 
-    # 1. DYNAMICALLY CREATE THE SCHEMA
-    # This creates a schema like:
-    # { "group_1": "...", "group_2": "...", ..., "group_N": "..." }
-    # This physically forces the Llama.cpp grammar to output N items
-    fields = {
-        f"group_{i+1}": (str, Field(description=f"The unique 2-4 word category name specifically for Group {i+1}"))
-        for i in range(num_groups)
-    }
-    DynamicNamesModel = create_model('DynamicNamesModel', **fields)
-
-    dynamic_structured_llm = llm.with_structured_output(DynamicNamesModel)
-
-    message = f"Parent Category: '{parent_name}'\n\n"
-    message += "Create specific sub-category names for the following distinct groups:\n\n"
-
-    # Populate prompt
-    for idx, group in enumerate(groups):
-        message += f'Group {idx + 1}:\n'
-        message += f"- Emotional Shift from Parent: {group['shift']}\n"
-        message += f"- Representative Movies: {', '.join(clean_titles(group['titles']))}\n\n"
-
-    messages =[SystemMessage(content=system_prompt), HumanMessage(content=message)]
-
-    # 3. Execute with retries
-    for attempt in range(5):
+    for attempt in range(3):
         try:
-            response = dynamic_structured_llm.invoke(messages)
-
-            # response is a dynamic Pydantic object. .model_dump() turns it into a dict
-            # .values() gets just the generated names in order
-            names = list(response.model_dump().values())
-
-            if len(set(names)) == num_groups and validate_names(names, num_groups):
-                return[name.strip().replace(' ', '_') for name in names]
-            else:
-                print(f"Attempt {attempt + 1} failed. Validation or uniqueness failed. Generated: {names}")
-
+            response = structured_llm.invoke(messages)
+            name = response.name.strip()
+            if 0 < len(name.split()) <= 6:
+                return name.replace(" ", "_")
         except Exception as e:
-            print(f'Retry LLM attempt {attempt+1} failed: {e}')
+            print(f'LLM Retry leaf {attempt+1}: {e}')
 
-    print(f'Failed to generate valid names for {parent_name}')
-    return[f"{parent_name.replace(' ', '_')}_Subgroup_{i+1}" for i in range(num_groups)]
+    return "Thematic_Cluster_" + str(random.randint(100, 999))

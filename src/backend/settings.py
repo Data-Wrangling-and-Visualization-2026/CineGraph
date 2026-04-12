@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 load_dotenv() # for manual use (please, ensure that there is .env file in the same folder)
 
 BASE_DIR = Path(__file__).resolve().parent
-
+HF_URL = os.environ['HF_API_URL']
 
 class ScraperSettings(BaseModel):
     url: str = Field(
