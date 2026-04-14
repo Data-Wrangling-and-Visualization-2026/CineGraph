@@ -25,3 +25,27 @@ export interface MovieData {
   } | null;
   embeddings: EmbeddingItem[];
 }
+
+export interface MovieSubmission {
+  title: string;
+  year: number;
+  subtitles: string; // Будем отправлять пустую строку
+  other_data: {
+    budget?: number;
+    overview?: string;
+    genres?: { id: number; name: string }[];
+    release_date?: string;
+    runtime?: number;
+    status?: string;
+    vote_average?: number;
+    vote_count?: number;
+  };
+}
+
+export interface SearchRequest {
+  description: string | number[]; // Либо текст, либо массив из 24 float
+}
+
+export interface SearchMoviesResponse {
+  movies: MovieData[]; // Бэкенд возвращает список фильмов
+}

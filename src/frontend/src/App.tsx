@@ -2,18 +2,30 @@ import { useState, useMemo, useEffect } from 'react';
 import { Graph } from './components/Graph/Graph';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { DetailedPanel } from './components/DetailedPanel/DetailedPanel';
+import { Toolbar } from './components/Toolbar/Toolbar';
+import { AddMovieModal } from './components/Modals/AddMovieModal';
 import { fetchGraph } from './api/graph';
 import { transformGraphData } from './utils/transform';
 import type { MyNode, GraphData } from './types/graph';
+import { TextSearchModal } from './components/Modals/TextSearchModal';
+import { VectorSearchModal } from './components/Modals/VectorSearchModal';
+import type { MovieData } from './types/movie';
+import { SearchResultsModal } from './components/Modals/SearchResultsModal';
 import './App.css';
 
 export default function App() {
   const [selectedNode, setSelectedNode] = useState<MyNode | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links:[] });
+  const [searchResults, setSearchResults] = useState<MovieData[] | null>(null);
   
   // Состояние: открыта ли большая панель слева
-  const[isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  // === НОВЫЕ СТЕЙТЫ ДЛЯ МОДАЛОК (Шаг 3 и 4) ===
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isTextSearchOpen, setIsTextSearchOpen] = useState(false);
+  const [isVectorSearchOpen, setIsVectorSearchOpen] = useState(false);
 
   useEffect(() => {
     loadGraph(1);
@@ -82,6 +94,16 @@ export default function App() {
     return { nodes: visibleNodes, links: visibleLinks };
   }, [graphData, activeCategory]);
 
+  const handleSearchResults = (movies: MovieData[]) => {
+    setSearchResults(movies);
+    
+    console.log("НАЙДЕНЫ ФИЛЬМЫ:", movies);
+  };
+
+  const handleSearchMovieSelect = (node: MyNode) => {
+    setSelectedNode(node);
+  };
+
   const handleNodeClick = async (node: MyNode) => {
     if (node.id.startsWith('movie-') || node.level === 3) {
       setSelectedNode(node);
@@ -122,7 +144,16 @@ export default function App() {
   };
 
   return (
-    <div className='div-primary'>
+    <div className='div-primary' style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      
+      {/* 1. Панель инструментов (Кнопки действий) */}
+      <Toolbar 
+        onOpenAddMovie={() => setIsAddModalOpen(true)}
+        onOpenTextSearch={() => setIsTextSearchOpen(true)}
+        onOpenVectorSearch={() => setIsVectorSearchOpen(true)}
+      />
+
+      {/* 2. Основной Граф */}
       <Graph
         data={visibleData}
         selectedNode={selectedNode}
@@ -132,6 +163,7 @@ export default function App() {
         onBackgroundClick={handleBackgroundClick}
       />
 
+      {/* 3. Боковая панель */}
       <Sidebar
         selectedNode={selectedNode}
         isHidden={isDetailsOpen}
@@ -144,11 +176,43 @@ export default function App() {
         }}
       />
 
+      {/* 4. Большая панель аналитики */}
       <DetailedPanel 
         node={selectedNode} 
         isOpen={isDetailsOpen} 
         onClose={() => setIsDetailsOpen(false)} 
       />
+
+      {/* 5. Модальные окна (рендерятся поверх всего) */}
+      {isAddModalOpen && (
+        <AddMovieModal onClose={() => setIsAddModalOpen(false)} />
+      )}
+      
+      {/* Заглушки для окон поиска, заменим их на следующем шаге */}
+      {isTextSearchOpen && (
+        <TextSearchModal 
+          onClose={() => setIsTextSearchOpen(false)} 
+          onResults={handleSearchResults}
+        />
+      )}
+      
+      {isVectorSearchOpen && (
+        <VectorSearchModal 
+          onClose={() => setIsVectorSearchOpen(false)} 
+          onResults={handleSearchResults}
+        />
+      )}
+
+      {searchResults !== null && (
+        <SearchResultsModal
+          isDetailsOpen={isDetailsOpen}
+          movies={searchResults}
+          onClose={() => setSearchResults(null)}
+          onClearSelection={handleBackgroundClick}
+          onMovieSelect={handleSearchMovieSelect}
+        />
+      )}
+
     </div>
   );
 }

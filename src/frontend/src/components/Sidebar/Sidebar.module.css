@@ -10,6 +10,7 @@
     box-sizing: border-box;
     box-shadow: -4px 0 15px rgba(0,0,0,0.1);
     overflow-y: auto;
+    z-index: 110;
     
     /* ДОБАВЛЯЕМ АНИМАЦИЮ */
     transform: translateX(0);

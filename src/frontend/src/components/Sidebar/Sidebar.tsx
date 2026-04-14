@@ -1,4 +1,3 @@
-// src/components/Sidebar/Sidebar.tsx
 import React from 'react';
 import type { MyNode } from '../../types/graph';
 import styles from './Sidebar.module.css';
@@ -14,7 +13,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({ selectedNode, onClose, onOpenDetails, isHidden }: SidebarProps) {
-  // Подключаем наш мощный хук
   const { movieData, loading, error, origTitle, engTitle, showOrigTitle, showEngTitle } = useMovieData(selectedNode);
 
   if (!selectedNode) return null;
@@ -25,36 +23,31 @@ export function Sidebar({ selectedNode, onClose, onOpenDetails, isHidden }: Side
     <div className={`${styles.div_sidebar} ${isHidden ? styles.hidden : ''}`}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
         <button onClick={onClose} style={{ cursor: 'pointer', padding: '5px 10px' }}>
-          Закрыть
+          Close
         </button>
         
         <button 
           onClick={onOpenDetails} 
           style={{ cursor: 'pointer', padding: '5px 10px', background: '#00bfff', color: '#fff', border: 'none', borderRadius: '4px' }}
         >
-          Анализ
+          Analysis
         </button>
       </div>
       
-      {/* Главное название (Имя узла) */}
       <h2 style={{ marginBottom: '5px' }}>{selectedNode.name}</h2>
       
       {meta?.tagline && (
         <p style={{ margin: '0 0 15px 0', fontStyle: 'italic', color: '#aaa', fontSize: '13px' }}>
-          «{meta.tagline}»
+          "{meta.tagline}"
         </p>
       )}
       
-      <div style={{ marginBottom: '15px', padding: '10px', background: 'rgba(0,0,0,0.2)', borderRadius: '6px' }}>
-        <p style={{ margin: '3px 0', fontSize: '13px' }}><b>Группа графа:</b> {selectedNode.group}</p>
-        <p style={{ margin: '3px 0', fontSize: '13px' }}><b>Значимость:</b> {selectedNode.val}</p>
-      </div>
 
       <hr style={{ borderColor: '#444', margin: '15px 0' }} />
 
-      <h3>О фильме</h3>
+      <h3>About Movie</h3>
       {loading ? (
-        <p style={{ color: '#aaa', fontSize: '14px' }}>Загрузка информации...</p>
+        <p style={{ color: '#aaa', fontSize: '14px' }}>Loading info...</p>
       ) : error ? (
         <p style={{ color: '#ff4b4b', fontSize: '14px' }}>{error}</p>
       ) : movieData ? (
@@ -66,14 +59,14 @@ export function Sidebar({ selectedNode, onClose, onOpenDetails, isHidden }: Side
           showEngTitle={showEngTitle}
         />
       ) : (
-        <p style={{ color: '#aaa' }}>Данные не найдены</p>
+        <p style={{ color: '#aaa' }}>Data not found</p>
       )}
 
       <hr style={{ borderColor: '#444', margin: '20px 0' }} />
       
-      <h3 style={{ marginBottom: '5px' }}>Анализ характеристик</h3>
+      <h3 style={{ marginBottom: '5px' }}>Feature Analysis</h3>
       {loading ? (
-        <p style={{ color: '#aaa' }}>Загрузка графика...</p>
+        <p style={{ color: '#aaa' }}>Loading chart...</p>
       ) : movieData?.embeddings ? (
         <HexagonChart embeddings={movieData.embeddings} />
       ) : null}

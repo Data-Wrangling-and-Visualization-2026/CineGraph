@@ -1,5 +1,3 @@
-// src/components/Graph/Graph.tsx
-
 import { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import type { ForceGraphMethods } from 'react-force-graph-2d';
@@ -14,18 +12,15 @@ interface GraphProps {
   onNodeDoubleClick?: (node: MyNode) => void;
   onBackgroundClick: () => void;
   isDetailsOpen?: boolean;
-  // Множество id узлов, которые сейчас раскрыты
   expandedNodeIds?: Set<string>;
 }
 
-// Физический радиус для collision
 function getCollisionRadius(node: any): number {
   if (node.level === 1) return 60;
   if (node.group === 2) return 30 + (node.childCount || 1) * 2.5;
   return 8;
 }
 
-// --- Кастомный Collision Force ---
 function createCollisionForce(radiusFn: (n: any) => number, strength = 0.8) {
   let nodes: any[] = [];
   const ITERATIONS = 3;
@@ -55,13 +50,11 @@ function createCollisionForce(radiusFn: (n: any) => number, strength = 0.8) {
   return force;
 }
 
-// --- Кастомный Radial Force (ТОЛЬКО для категорий, листья исключены) ---
 function createRadialForce(cx = 0, cy = 0, strength = 0.04) {
   let nodes: any[] = [];
 
   function force(alpha: number) {
     for (const node of nodes) {
-      // Листья (group 3) и корень — не трогаем
       if (node.group === 3 || node.level === 1) continue;
       const targetR = 220;
       const dx = (node.x ?? 0) - cx;
@@ -76,14 +69,12 @@ function createRadialForce(cx = 0, cy = 0, strength = 0.04) {
   return force;
 }
 
-// Один источник истины для curvature — используется И при рисовании, И для частиц
 function getLinkCurvature(link: any): number {
   const id = typeof link.target === 'object' ? link.target.id : link.target;
   const hash = String(id).charCodeAt(0);
   return hash % 2 === 0 ? 0.15 : -0.15;
 }
 
-// Контрольная точка bezier — формула идентична react-force-graph-2d
 function getLinkControlPoint(start: any, end: any, curvature: number) {
   return {
     cx: (start.x + end.x) / 2 + curvature * (end.y - start.y),
@@ -98,8 +89,6 @@ export function Graph({
   const fgRef = useRef<ForceGraphMethods<any, any> | undefined>(undefined);
   const [hoverNode, setHoverNode] = useState<MyNode | null>(null);
 
-  // Ref для expandedNodeIds — force функции читают его напрямую,
-  // без перерегистрации форсов при каждом раскрытии
   const expandedRef = useRef<Set<string> | undefined>(expandedNodeIds);
   useEffect(() => {
     expandedRef.current = expandedNodeIds;
@@ -107,12 +96,10 @@ export function Graph({
 
   useGraphCamera(fgRef as any, isDetailsOpen, selectedNode, data.nodes);
 
-  // --- ФИЗИКА: настраиваем форсы один раз при маунте / смене данных ---
   useEffect(() => {
     const fg = fgRef.current;
     if (!fg) return;
 
-    // 1. Link distance — читает expandedRef, не зависит от замыкания
     const linkForce = fg.d3Force('link');
     if (linkForce) {
       (linkForce as any).distance((link: any) => {
@@ -131,7 +118,6 @@ export function Graph({
       });
     }
 
-    // 2. Charge
     const chargeForce = fg.d3Force('charge');
     if (chargeForce) {
       (chargeForce as any)
@@ -143,16 +129,11 @@ export function Graph({
         .distanceMax(400);
     }
 
-    // 3. Collision
     fg.d3Force('collision', createCollisionForce(getCollisionRadius, 0.85));
-
-    // 4. Radial — только категории
-    fg.d3Force('radial', createRadialForce(0, 0, 0.04));
-
+    fg.d3Force('radial', createRadialForce(0, 0, 0.06));
     fg.d3ReheatSimulation();
-  }, [data]); // только data — не expandedNodeIds
+  }, [data]);
 
-  // --- ПЛАВНЫЙ ПРОГРЕВ при раскрытии/схлопывании ---
   const prevExpandedRef = useRef<Set<string> | undefined>(undefined);
   useEffect(() => {
     if (prevExpandedRef.current === undefined) {
@@ -164,8 +145,6 @@ export function Graph({
     const fg = fgRef.current;
     if (!fg) return;
 
-    // alphaTarget(0.08) — симуляция плавно греется до этого уровня,
-    // без резкого рывка. Через 1500мс возвращаем к 0 (остывание).
     (fg as any).d3AlphaTarget?.(0.08);
     const timer = setTimeout(() => {
       (fg as any).d3AlphaTarget?.(0);
@@ -173,8 +152,6 @@ export function Graph({
     return () => clearTimeout(timer);
   }, [expandedNodeIds]);
 
-  // --- КЛИК ---
-  const lastClickRef = useRef<{ id: string; time: number }>({ id: '', time: 0 });
   const handleNodeClick = useCallback((node: any) => {
     const now = Date.now();
     const last = lastClickRef.current;
@@ -187,7 +164,8 @@ export function Graph({
     }
   }, [onNodeClick, onNodeDoubleClick]);
 
-  // --- ПОДСВЕТКА СВЯЗЕЙ ---
+  const lastClickRef = useRef<{ id: string; time: number }>({ id: '', time: 0 });
+
   const highlightLinks = useMemo(() => {
     const links = new Set<any>();
     const activeNode = hoverNode || selectedNode;
@@ -211,11 +189,7 @@ export function Graph({
       graphData={data}
       backgroundColor="#0D0D0F"
       nodeLabel=""
-
-      // linkCurvature — источник истины, частицы следуют этому значению
       linkCurvature={getLinkCurvature}
-
-      // Рисуем ребра вручную для градиента, контрольная точка = та же формула
       linkCanvasObject={(link: any, ctx) => {
         const start = link.source;
         const end = link.target;
@@ -245,8 +219,6 @@ export function Graph({
         ctx.stroke();
       }}
       linkCanvasObjectMode={() => 'replace'}
-
-      // Частицы совпадают с кривой, т.к. linkCurvature синхронизирован
       linkDirectionalParticles={(link: any) => {
         if (!selectedNode) return 0;
         const srcId = typeof link.source === 'object' ? link.source.id : link.source;
@@ -259,11 +231,9 @@ export function Graph({
         return src ? getNodeColor(src) : '#ffffff';
       }}
       linkDirectionalParticleSpeed={0.004}
-
       onNodeClick={handleNodeClick}
       onBackgroundClick={onBackgroundClick}
       onNodeHover={(node) => setHoverNode((node as MyNode) || null)}
-
       nodeCanvasObject={(node: any, ctx, globalScale) => {
         drawNodeCanvasObject(node, ctx, globalScale, {
           hoverNodeId: hoverNode?.id,
