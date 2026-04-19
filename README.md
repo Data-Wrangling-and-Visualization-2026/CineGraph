@@ -35,7 +35,7 @@
   <p align="center">
     A data-driven web application that processes raw subtitles from 40,000 movies to generate interactive "Emotional Seismographs"
     <br />
-    <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph">View Demo</a>
+    <a href="http://81.26.181.122:5173/">View Demo</a>
     &middot;
     <a href="https://github.com/Data-Wrangling-and-Visualization-2026/CineGraph/issues">Report Bug</a>
     &middot;

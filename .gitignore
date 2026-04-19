@@ -259,3 +259,5 @@ init2.sql
 
 # Waiting validation
 movies_for_validation/
+
+eda*
