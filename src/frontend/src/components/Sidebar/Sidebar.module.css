@@ -12,15 +12,11 @@
     overflow-y: auto;
     z-index: 110;
     
-    /* ДОБАВЛЯЕМ АНИМАЦИЮ */
     transform: translateX(0);
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* НОВЫЙ КЛАСС: уводит панель за правый край экрана */
 .hidden {
     transform: translateX(110%);
-    box-shadow: none; /* Убираем тень, пока она спрятана */
+    box-shadow: none;
 }
-
-/* (ваш код скроллбара ниже...) */

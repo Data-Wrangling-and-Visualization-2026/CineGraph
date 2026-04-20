@@ -97,10 +97,6 @@ export function VectorSearchModal({ onClose, onResults }: VectorSearchModalProps
           {renderColumn('Ending', 'end')}
         </div>
 
-        <p style={{ color: '#888', fontSize: '12px', textAlign: 'center', marginBottom: '15px' }}>
-          * Variance (spread) will be calculated automatically before sending the request.
-        </p>
-
         <button onClick={handleSearch} className={styles.submit_btn} disabled={loading}>
           {loading ? 'Analyzing...' : 'Find Similar Movies'}
         </button>

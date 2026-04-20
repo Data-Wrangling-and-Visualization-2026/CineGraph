@@ -64,7 +64,7 @@ export function Sidebar({ selectedNode, onClose, onOpenDetails, isHidden }: Side
 
       <hr style={{ borderColor: '#444', margin: '20px 0' }} />
       
-      <h3 style={{ marginBottom: '5px' }}>Feature Analysis</h3>
+      <h3 style={{ marginBottom: '5px' }}>Emotional Analysis</h3>
       {loading ? (
         <p style={{ color: '#aaa' }}>Loading chart...</p>
       ) : movieData?.embeddings ? (

@@ -130,7 +130,7 @@ export function Graph({
     }
 
     fg.d3Force('collision', createCollisionForce(getCollisionRadius, 0.85));
-    fg.d3Force('radial', createRadialForce(0, 0, 0.06));
+    fg.d3Force('radial', createRadialForce(0, 0, 0.03));
     fg.d3ReheatSimulation();
   }, [data]);
 

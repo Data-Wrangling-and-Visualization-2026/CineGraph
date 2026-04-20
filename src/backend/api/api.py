@@ -18,6 +18,7 @@ from services.movie_service import place_into_verification_queue, validate_movie
 from services.search_service import find_matching_movies
 from settings import settings
 from sqlalchemy.ext.asyncio import AsyncSession
+from api.charts import router as charts_router
 
 
 @asynccontextmanager
@@ -37,6 +38,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router)
+app.include_router(charts_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

@@ -39,7 +39,7 @@ export function TextSearchModal({ onClose, onResults }: TextSearchModalProps) {
 
         <form onSubmit={handleSearch}>
           <div className={styles.form_group}>
-            <label>Describe movie, mood or plot</label>
+            <label>Describe movie mood or plot</label>
             <textarea 
               autoFocus
               className={styles.textarea} 

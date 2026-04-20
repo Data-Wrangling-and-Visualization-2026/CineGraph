@@ -1,10 +1,10 @@
-
-
-.div-primary {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-  background: #9c9cbd;
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #0D0D0F;
+  width: 100%;
+  min-height: 100%;
+  /* overflow: hidden; ← УДАЛИТЬ, это и было причиной */
+  /* height: 100vh;   ← УДАЛИТЬ, фиксированная высота блокирует рост страницы */
 }
-
-

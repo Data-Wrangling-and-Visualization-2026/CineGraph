@@ -11,17 +11,22 @@
   },
   "dependencies": {
     "d3-force": "^3.0.0",
+    "plotly.js": "^3.5.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-force-graph-2d": "^1.29.1",
+    "react-plotly.js": "^2.6.0",
+    "react-router-dom": "^7.14.1",
     "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/d3-force": "^3.0.10",
     "@types/node": "^24.10.1",
+    "@types/plotly.js": "^3.0.10",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/react-plotly.js": "^2.6.4",
     "@vitejs/plugin-react-swc": "^4.2.2",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
